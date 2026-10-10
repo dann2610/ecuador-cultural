@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Editar reseña{% endblock %}
+{% block content %}
+<div class="container-xxl py-4" style="max-width: 760px">
+  <h1 class="h3">Editar reseña · {{ review.target }}</h1>
+  <form method="post" enctype="multipart/form-data" class="card card-body shadow-sm">{% csrf_token %}
+    {% include "partials/form_fields.html" %}
+    <div class="d-flex gap-2 mt-3"><button class="btn btn-green">Guardar</button><a class="btn btn-link" href="{{ review.get_absolute_url }}">Cancelar</a></div>
+  </form>
+</div>
+{% endblock %}

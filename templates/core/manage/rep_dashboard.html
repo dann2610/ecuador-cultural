@@ -1,0 +1,31 @@
+{% extends "base.html" %}{% load ec_tags humanize %}
+{% block title %}Panel de comunidad{% endblock %}
+{% block content %}
+<div class="container-xxl py-4">
+  <div class="panel-head"><h1 class="h3 mb-0"><i class="bi bi-house-heart"></i> Panel del representante comunitario</h1>
+    <div class="d-flex gap-2"><a class="btn btn-sm btn-outline-green" href="{% url 'itineraries:create' %}"><i class="bi bi-signpost"></i> Proponer itinerario</a>{% if user.is_platform_admin %}<a class="btn btn-sm btn-green" href="{% url 'core:admin_dashboard' %}">Panel administrativo</a>{% endif %}</div></div>
+  <h2 class="h5 mt-3">Comunidades asignadas</h2>
+  <div class="row g-3">
+    {% for c in communities %}
+    <div class="col-md-6 col-lg-4"><div class="side-card h-100">
+      <div class="d-flex justify-content-between"><h3 class="h6 mb-1">{{ c.name }}</h3>{% status_badge c %}</div>
+      <p class="small text-muted">{{ c.province.name }} · {{ c.n_photos }} fotos · {{ c.n_places }} lugares</p>
+      <div class="d-flex gap-2"><a class="btn btn-sm btn-green" href="{% url 'core:manage_community' c.slug %}">Gestionar</a>{% if c.is_published %}<a class="btn btn-sm btn-outline-green" href="{{ c.get_absolute_url }}">Ver pública</a>{% endif %}</div>
+    </div></div>
+    {% empty %}<div class="col-12"><div class="empty-state"><i class="bi bi-house"></i><p>Aún no tienes comunidades asignadas. <a href="{% url 'communities:request' %}">Solicita el registro de tu comunidad</a>.</p></div></div>{% endfor %}
+  </div>
+  <div class="row g-4 mt-1">
+    <div class="col-lg-6"><div class="side-card">
+      <h2 class="h6">Estado de revisión (no publicados)</h2>
+      <ul class="list-unstyled small mb-0">{% for p in pending %}<li class="d-flex justify-content-between border-bottom py-1"><span>{{ p.label|capfirst }}: {{ p.name }}</span>{% status_badge p.obj %}</li>{% empty %}<li class="text-muted">Todo tu contenido está publicado.</li>{% endfor %}</ul>
+    </div></div>
+    <div class="col-lg-6"><div class="side-card">
+      <h2 class="h6">Resumen de donaciones confirmadas</h2>
+      <ul class="list-unstyled small mb-0">{% for p in projects %}<li class="d-flex justify-content-between border-bottom py-1"><a href="{% url 'donations:project_donations' p.slug %}">{{ p.name }}</a><span>${{ p.confirmed_amount|floatformat:2|intcomma }} · {{ p.n_confirmed }} aporte{{ p.n_confirmed|pluralize }}</span></li>{% empty %}<li class="text-muted">Sin proyectos.</li>{% endfor %}</ul>
+    </div>
+    <div class="side-card"><h2 class="h6">Itinerarios propuestos</h2>
+      <ul class="list-unstyled small mb-0">{% for it in itineraries %}<li class="d-flex justify-content-between border-bottom py-1"><a href="{% url 'itineraries:edit' it.slug %}">{{ it.name }}</a>{% status_badge it %}</li>{% empty %}<li class="text-muted">Sin itinerarios.</li>{% endfor %}</ul></div>
+    </div>
+  </div>
+</div>
+{% endblock %}

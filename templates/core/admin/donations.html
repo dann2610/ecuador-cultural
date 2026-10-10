@@ -1,0 +1,28 @@
+{% extends "core/admin/_layout.html" %}{% load ec_tags %}
+{% block title %}Donaciones{% endblock %}{% block panel_title %}Verificación de aportes{% endblock %}
+{% block panel %}
+<div class="d-flex flex-wrap gap-2 mb-3">
+  <a class="btn btn-sm {% if not current %}btn-green{% else %}btn-outline-green{% endif %}" href="?">Todos</a>
+  {% for k, l in statuses %}<a class="btn btn-sm {% if current == k %}btn-green{% else %}btn-outline-green{% endif %}" href="?estado={{ k }}">{{ l }}</a>{% endfor %}
+</div>
+<div class="table-responsive card shadow-sm"><table class="table align-middle mb-0">
+  <thead><tr><th>#</th><th>Fecha</th><th>Proyecto</th><th>Usuario</th><th>Monto</th><th>Método / referencia</th><th>Comprobante</th><th>Estado</th><th>Acciones</th></tr></thead>
+  <tbody>
+  {% for d in page %}
+  <tr><td>{{ d.pk }}</td><td>{{ d.created_at|date:"d/m/Y" }}</td><td>{{ d.project.name }}<br><small class="text-muted">{{ d.project.community.name }}</small></td>
+    <td>{{ d.user|default:"—" }}{% if d.donor_name %}<br><small>{{ d.donor_name }}</small>{% endif %}</td><td>${{ d.amount|floatformat:2 }}</td>
+    <td>{{ d.get_method_display }}<br><small>{{ d.transaction_reference|default:"sin referencia" }}</small></td>
+    <td>{% if d.receipt %}<a href="{{ d.receipt.url }}" target="_blank" rel="noopener">Ver</a>{% else %}—{% endif %}</td>
+    <td>{% status_badge d %}{% if d.verified_by %}<br><small>por {{ d.verified_by }}</small>{% endif %}</td>
+    <td>{% if d.status != 'confirmed' %}
+      <form method="post" class="d-flex flex-column gap-1">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <input class="form-control form-control-sm" name="note" placeholder="Nota">
+        <div class="btn-group btn-group-sm">
+          <button class="btn btn-green" formaction="{% url 'core:donation_action' d.pk 'confirmar' %}" onclick="return confirm('¿Confirmas que el aporte fue recibido y verificado?')">Confirmar</button>
+          <button class="btn btn-outline-danger" formaction="{% url 'core:donation_action' d.pk 'rechazar' %}">No verificada</button>
+          <button class="btn btn-outline-secondary" formaction="{% url 'core:donation_action' d.pk 'cancelar' %}">Cancelar</button>
+        </div></form>{% endif %}</td></tr>
+  {% empty %}<tr><td colspan="9" class="text-center text-muted py-4">Sin aportes.</td></tr>{% endfor %}
+  </tbody></table></div>
+{% include "partials/pagination.html" %}
+{% endblock %}

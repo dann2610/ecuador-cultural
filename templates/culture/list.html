@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}{{ title }}{% endblock %}
+{% block content %}
+<section class="page-hero"><div class="container-xxl"><h1><i class="bi {{ icon }}"></i> {{ title }}</h1><p>{{ intro }}</p></div></section>
+<div class="container-xxl">
+  <form class="filter-bar card card-body shadow-sm" method="get">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-5"><label class="form-label" for="fq">Buscar</label><input class="form-control" id="fq" name="q" value="{{ request.GET.q }}"></div>
+      <div class="col-md-3"><label class="form-label" for="fp">Provincia</label><select class="form-select" id="fp" name="provincia"><option value="">Todas</option>{% for p in provinces %}<option value="{{ p.slug }}" {% if request.GET.provincia == p.slug %}selected{% endif %}>{{ p.name }}</option>{% endfor %}</select></div>
+      {% if craft_kinds %}<div class="col-md-3"><label class="form-label" for="ft">Tipo</label><select class="form-select" id="ft" name="tipo"><option value="">Todos</option>{% for k, l in craft_kinds %}<option value="{{ k }}" {% if request.GET.tipo == k %}selected{% endif %}>{{ l }}</option>{% endfor %}</select></div>{% endif %}
+      <div class="col-md-1 d-grid"><button class="btn btn-green" aria-label="Filtrar"><i class="bi bi-funnel"></i></button></div>
+    </div>
+  </form>
+  <div class="row g-4 mt-1">
+    {% for item in page %}<div class="col-md-6 col-lg-4">{% include "culture/_item.html" %}</div>
+    {% empty %}<div class="col-12"><div class="empty-state"><i class="bi {{ icon }}"></i><p>No hay registros publicados con esos criterios.</p></div></div>{% endfor %}
+  </div>
+  {% include "partials/pagination.html" %}
+</div>
+{% endblock %}

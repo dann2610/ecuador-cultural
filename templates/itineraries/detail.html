@@ -1,0 +1,60 @@
+{% extends "base.html" %}{% load static ec_tags %}
+{% block title %}{{ it.name }}{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="container-xxl">
+    <span class="kicker text-white-50">{{ it.get_kind_display }}{% if it.province %} · {{ it.province.name }}{% endif %}</span>
+    <h1>{{ it.name }} {% demo_badge it %}{% if not it.is_published %} {% status_badge it %}{% endif %}</h1>
+    <ul class="route-meta route-meta-light">
+      <li><i class="bi bi-clock"></i> {{ it.duration_days }} día{{ it.duration_days|pluralize }}</li>
+      {% if it.difficulty %}<li><i class="bi bi-activity"></i> Dificultad {{ it.get_difficulty_display|lower }}</li>{% endif %}
+      <li><i class="bi bi-rulers"></i> {% if it.distance_km %}{{ it.distance_km }} km{% if not it.estimates_verified %} (estimación){% endif %}{% else %}Distancia por confirmar{% endif %}</li>
+      <li><i class="bi bi-wallet2"></i> {% if it.budget_estimate %}${{ it.budget_estimate|floatformat:0 }} orientativo{% else %}Presupuesto por confirmar{% endif %}</li>
+    </ul>
+  </div>
+</section>
+<div class="container-xxl">
+  <div class="action-bar shadow-sm">
+    {% if route_url %}<a class="btn btn-green" href="{{ route_url }}" target="_blank" rel="noopener"><i class="bi bi-sign-turn-right"></i> Abrir ruta completa en Google Maps</a>{% endif %}
+    {% if user.is_authenticated %}
+    <form method="post" action="{% url 'itineraries:favorite' it.slug %}" class="js-fav">{% csrf_token %}<button class="btn btn-outline-green btn-fav-text{% if is_fav %} is-fav{% endif %}" aria-pressed="{{ is_fav|yesno:'true,false' }}"><i class="bi bi-heart{% if is_fav %}-fill{% endif %}"></i> <span>{% if is_fav %}Guardado{% else %}Guardar itinerario{% endif %}</span></button></form>
+    <form method="post" action="{% url 'itineraries:copy' it.slug %}">{% csrf_token %}<button class="btn btn-outline-green"><i class="bi bi-copy"></i> Personalizar como mi recorrido</button></form>
+    {% else %}<a class="btn btn-outline-green" href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}"><i class="bi bi-heart"></i> Inicia sesión para guardarlo</a>{% endif %}
+    <button class="btn btn-outline-green" type="button" data-share data-title="{{ it.name }}"><i class="bi bi-share"></i> Compartir</button>
+    {% if can_edit %}<a class="btn btn-outline-dark ms-lg-auto" href="{% url 'itineraries:edit' it.slug %}"><i class="bi bi-pencil"></i> Editar</a>{% endif %}
+  </div>
+  <div class="row g-4 mt-1">
+    <div class="col-lg-6">
+      <div class="prose">{{ it.description|linebreaks }}</div>
+      {% if it.budget_note %}<p class="small text-muted"><i class="bi bi-wallet2"></i> {{ it.budget_note }}</p>{% endif %}
+      {% if not it.estimates_verified %}<p class="small text-muted"><i class="bi bi-info-circle"></i> Distancias y tiempos son estimaciones o están pendientes de confirmación. Verifica antes de viajar.</p>{% endif %}
+      <h2 class="h4 mt-4">Paradas</h2>
+      <ol class="stop-list">
+        {% for s in stops %}
+        <li class="stop">
+          <div class="stop__num">{{ forloop.counter }}</div>
+          <div class="stop__body">
+            {% if s.travel_time_note and not forloop.first %}<p class="stop__travel"><i class="bi bi-car-front"></i> {{ s.travel_time_note }}</p>{% endif %}
+            <h3 class="h6 mb-1"><a href="{{ s.url }}">{{ s.name }}</a> <span class="small text-muted">· Día {{ s.day }}</span></h3>
+            {% if s.notes %}<p class="small mb-1">{{ s.notes }}</p>{% endif %}
+            {% if s.directions_url %}<a class="small" href="{{ s.directions_url }}" target="_blank" rel="noopener"><i class="bi bi-google"></i> Abrir en Google Maps</a>{% if not s.location_verified %} <span class="badge text-bg-warning">ubicación aproximada</span>{% endif %}
+            {% else %}<span class="small text-muted">Ubicación pendiente de validación</span>{% endif %}
+          </div>
+        </li>
+        {% endfor %}
+      </ol>
+      {% if it.recommendations %}<h2 class="h5 mt-4">Recomendaciones</h2><div class="respect-note">{{ it.recommendations|linebreaksbr }}</div>{% endif %}
+      {% if it.source %}<p class="source mt-3">Fuente: {{ it.source|urlize }}</p>{% endif %}
+    </div>
+    <div class="col-lg-6">
+      <div class="sticky-lg-top" style="top: 90px">
+        {{ points|json_script:"route-points" }}
+        <div class="route-map" data-map-points="route-points" data-route="true"></div>
+        {% if points|length < stops|length %}<p class="small text-muted mt-2">Algunas paradas no aparecen en el mapa porque su ubicación está pendiente de validación.</p>{% endif %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>{% endblock %}

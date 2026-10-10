@@ -1,0 +1,18 @@
+{% extends "core/admin/_layout.html" %}{% load ec_tags %}
+{% block title %}Moderación{% endblock %}{% block panel_title %}Contenidos pendientes de revisión{% endblock %}
+{% block panel %}
+{% for item in queue %}
+<div class="mod-item">
+  <div>
+    <span class="kicker">{{ item.label }}{% if item.community %} · {{ item.community.name }}{% endif %}</span>
+    <h2 class="h6 mb-1">{% if item.url %}<a href="{{ item.url }}" target="_blank">{{ item.name }}</a>{% else %}{{ item.name }}{% endif %} {% demo_badge item.obj %}</h2>
+    <p class="small text-muted mb-1">Propuesto por {{ item.obj.created_by|default:"—" }} · actualizado {{ item.obj.updated_at|timesince }} · Fuente: {{ item.obj.source|default:"no indicada" }}</p>
+  </div>
+  <form method="post" class="mod-actions" action="">{% csrf_token %}
+    <input class="form-control form-control-sm" name="note" placeholder="Observación (opcional)">
+    <button class="btn btn-sm btn-green" formaction="{% url 'core:moderate' item.key item.obj.pk 'aprobar' %}"><i class="bi bi-check2"></i> Aprobar y publicar</button>
+    <button class="btn btn-sm btn-outline-danger" formaction="{% url 'core:moderate' item.key item.obj.pk 'rechazar' %}"><i class="bi bi-x"></i> Rechazar</button>
+  </form>
+</div>
+{% empty %}<div class="empty-state"><i class="bi bi-check2-all"></i><p>No hay contenidos pendientes.</p></div>{% endfor %}
+{% endblock %}

@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+{% block title %}Publicar avance{% endblock %}
+{% block content %}
+<div class="container-xxl py-4" style="max-width: 860px">
+  <h1 class="h3">Nuevo avance · {{ project.name }}</h1>
+  <form method="post" enctype="multipart/form-data" class="card card-body shadow-sm">{% csrf_token %}
+    {% include "partials/form_fields.html" %}
+    <div class="d-flex gap-2 mt-3"><button class="btn btn-green">Publicar avance</button><a class="btn btn-link" href="{{ project.get_absolute_url }}">Cancelar</a></div>
+  </form>
+</div>
+{% endblock %}

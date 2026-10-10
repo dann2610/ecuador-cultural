@@ -1,0 +1,44 @@
+{% extends "core/admin/_layout.html" %}{% load ec_tags humanize %}
+{% block title %}Panel administrativo{% endblock %}
+{% block panel %}
+<div class="row g-3">
+  {% for label, value, icon, url in kpis %}
+  <div class="col-6 col-lg-3"><a class="kpi kpi-link" {% if url %}href="{% url url %}"{% endif %}><i class="bi {{ icon }}"></i><span class="kpi__num">{{ value }}</span><span>{{ label }}</span></a></div>
+  {% endfor %}
+</div>
+<div class="row g-4 mt-1">
+  <div class="col-lg-4">
+    <div class="side-card">
+      <h2 class="h6">Tareas pendientes</h2>
+      <ul class="list-unstyled mb-0">
+        <li class="d-flex justify-content-between py-1"><a href="{% url 'core:admin_donations' %}?estado=under_review">Aportes por verificar</a><span class="badge text-bg-warning">{{ to_verify }}</span></li>
+        <li class="d-flex justify-content-between py-1"><a href="{% url 'core:admin_requests' %}">Solicitudes de comunidades</a><span class="badge text-bg-warning">{{ requests }}</span></li>
+      </ul>
+      <hr><p class="small mb-1">Total confirmado en donaciones</p><p class="h4 text-green mb-0">${{ confirmed_sum|floatformat:2|intcomma }}</p>
+    </div>
+    <div class="side-card">
+      <h2 class="h6">Acciones rápidas</h2>
+      <div class="d-grid gap-2">
+        <a class="btn btn-sm btn-green" href="{% url 'core:community_create' %}"><i class="bi bi-plus"></i> Nueva comunidad</a>
+        <a class="btn btn-sm btn-outline-green" href="{% url 'itineraries:create' %}"><i class="bi bi-signpost"></i> Nuevo itinerario</a>
+        <a class="btn btn-sm btn-outline-green" href="{% url 'core:admin_featured' %}"><i class="bi bi-images"></i> Destinos del carrusel</a>
+        <a class="btn btn-sm btn-outline-green" href="{% url 'admin:communities_category_changelist' %}"><i class="bi bi-tags"></i> Categorías</a>
+        <a class="btn btn-sm btn-outline-green" href="{% url 'admin:chatbot_faq_changelist' %}"><i class="bi bi-question-circle"></i> Preguntas del chatbot</a>
+      </div>
+    </div>
+  </div>
+  <div class="col-lg-8">
+    <div class="side-card">
+      <h2 class="h6">Comunidades</h2>
+      <div class="table-responsive"><table class="table table-sm align-middle mb-0">
+        <thead><tr><th>Nombre</th><th>Provincia</th><th>Estado</th><th>Representantes</th><th></th></tr></thead>
+        <tbody>{% for c in communities %}<tr><td>{{ c.name }} {% demo_badge c %}</td><td>{{ c.province.name }}</td><td>{% status_badge c %}</td><td>{{ c.reps }}</td><td class="text-end"><a class="btn btn-sm btn-outline-green" href="{% url 'core:manage_community' c.slug %}">Gestionar</a></td></tr>{% endfor %}</tbody>
+      </table></div>
+    </div>
+    <div class="side-card">
+      <h2 class="h6">Actividad reciente</h2>
+      <ul class="list-unstyled small mb-0">{% for a in audit %}<li class="border-bottom py-1"><span class="text-muted">{{ a.created_at|date:"d/m H:i" }}</span> · {{ a.actor|default:"Sistema" }} · <strong>{{ a.action }}</strong> · {{ a.object_repr }}</li>{% empty %}<li class="text-muted">Sin actividad.</li>{% endfor %}</ul>
+    </div>
+  </div>
+</div>
+{% endblock %}

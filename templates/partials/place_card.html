@@ -1,0 +1,15 @@
+{% load ec_tags %}{% with photo=p.photos.all.0 %}
+<article class="mini-card h-100">
+  <a href="{{ p.get_absolute_url }}" class="mini-card__media">
+    {% if photo %}<img src="{{ photo.card_url }}" alt="{{ photo.alt_text }}" loading="lazy" width="720" height="480">
+    {% if photo.is_placeholder %}<span class="media-flag"><i class="bi bi-image"></i> Demostración</span>{% endif %}
+    {% else %}<div class="photo-placeholder sm"><i class="bi {{ p.icon }}"></i><span>Fotografía pendiente</span></div>{% endif %}
+  </a>
+  <div class="mini-card__body">
+    <span class="kicker"><i class="bi {{ p.icon }}"></i> {{ p.get_kind_display }}</span>
+    <h3 class="h6 mb-1"><a href="{{ p.get_absolute_url }}">{{ p.name }}</a></h3>
+    <p class="small text-muted mb-2">{{ p.community.name }}{% if p.community.province %} · {{ p.community.province.name }}{% endif %}</p>
+    {% demo_badge p %}
+  </div>
+</article>
+{% endwith %}

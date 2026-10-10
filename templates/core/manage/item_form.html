@@ -1,0 +1,29 @@
+{% extends "base.html" %}{% load ec_tags %}
+{% block title %}{% if instance.pk %}Editar{% else %}Agregar{% endif %} {{ singular }}{% endblock %}
+{% block content %}
+<div class="container-xxl py-4" style="max-width: 1000px">
+  <a class="small" href="{% url 'core:manage_community' community.slug %}#{{ kind }}"><i class="bi bi-arrow-left"></i> {{ community.name }}</a>
+  <h1 class="h3 mt-2">{% if instance.pk %}Editar{% else %}Agregar{% endif %} {{ singular }} {% if reviewable and instance.pk %}{% status_badge instance %}{% endif %}</h1>
+  {% if reviewable and instance.review_notes %}<div class="alert alert-warning small">Observación del administrador: {{ instance.review_notes }}</div>{% endif %}
+  <form method="post" enctype="multipart/form-data" class="card card-body shadow-sm">{% csrf_token %}
+    {% include "partials/form_fields.html" %}
+    <div class="d-flex flex-wrap gap-2 mt-3">
+      {% if reviewable %}
+        {% if user.is_platform_admin %}
+          <button class="btn btn-green" name="action" value="publish"><i class="bi bi-check2-circle"></i> Guardar y publicar</button>
+          <button class="btn btn-outline-secondary" name="action" value="draft">Guardar como borrador</button>
+        {% elif instance.is_published %}
+          <button class="btn btn-green" name="action" value="save"><i class="bi bi-save"></i> Guardar cambios</button>
+          <span class="small text-muted align-self-center">Los cambios a contenido publicado quedan registrados y se notifican al administrador.</span>
+        {% else %}
+          <button class="btn btn-green" name="action" value="submit"><i class="bi bi-send"></i> Guardar y enviar a revisión</button>
+          <button class="btn btn-outline-secondary" name="action" value="draft">Guardar borrador</button>
+        {% endif %}
+      {% else %}
+        <button class="btn btn-green" name="action" value="save"><i class="bi bi-save"></i> Guardar</button>
+      {% endif %}
+      <a class="btn btn-link" href="{% url 'core:manage_community' community.slug %}#{{ kind }}">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

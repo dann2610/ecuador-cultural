@@ -1,0 +1,43 @@
+{% extends "base.html" %}{% load static ec_tags l10n %}
+{% block title %}{{ p.name }}{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">{% endblock %}
+{% block content %}
+<div class="container-xxl py-4">
+  <nav aria-label="Ruta de navegación"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'communities:list' %}">Pueblos</a></li><li class="breadcrumb-item"><a href="{{ p.community.get_absolute_url }}">{{ p.community.name }}</a></li><li class="breadcrumb-item active" aria-current="page">{{ p.name }}</li></ol></nav>
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <span class="kicker"><i class="bi {{ p.icon }}"></i> {{ p.get_kind_display }}</span>
+      <h1>{{ p.name }} {% demo_badge p %}{% if not p.is_published %} {% status_badge p %}{% endif %}</h1>
+      <p class="text-muted"><i class="bi bi-geo-alt"></i> {{ p.community.name }}, {{ p.community.province.name }}{% if p.address %} · {{ p.address }}{% endif %}</p>
+      <div class="action-bar shadow-sm">
+        {% if p.directions_url %}<a class="btn btn-green" href="{{ p.directions_url }}" target="_blank" rel="noopener"><i class="bi bi-sign-turn-right"></i> Cómo llegar</a>
+        {% else %}<span class="btn btn-outline-secondary disabled"><i class="bi bi-sign-turn-right"></i> Ubicación pendiente de validación</span>{% endif %}
+        {% if user.is_authenticated %}
+        <form method="post" action="{% url 'tourism:place_favorite' p.slug %}" class="js-fav">{% csrf_token %}<button class="btn btn-outline-green btn-fav-text{% if is_favorite %} is-fav{% endif %}" aria-pressed="{{ is_favorite|yesno:'true,false' }}"><i class="bi bi-heart{% if is_favorite %}-fill{% endif %}"></i> <span>{% if is_favorite %}En favoritos{% else %}Guardar en favoritos{% endif %}</span></button></form>
+        {% endif %}
+        <button class="btn btn-outline-green" type="button" data-share data-title="{{ p.name }}"><i class="bi bi-share"></i> Compartir</button>
+        {% if can_manage %}<a class="btn btn-outline-dark ms-lg-auto" href="{% url 'core:item_edit' p.community.slug 'lugar' p.pk %}"><i class="bi bi-pencil"></i> Editar</a>{% endif %}
+      </div>
+      {% if photos %}<div class="gallery mt-3">{% for ph in photos %}<figure class="gallery__item"><img src="{{ ph.card_url }}" alt="{{ ph.alt_text }}" loading="lazy" width="720" height="480"><figcaption>{{ ph.author }} · {{ ph.license }}{% if ph.is_placeholder %} · demostración{% endif %}</figcaption></figure>{% endfor %}</div>{% endif %}
+      <div class="prose mt-3">{{ p.description|linebreaks }}</div>
+      {% if p.heritage_features %}<h2 class="h5">Características patrimoniales</h2><div class="prose">{{ p.heritage_features|linebreaks }}</div>{% endif %}
+      {% if p.visiting_rules %}<div class="respect-note"><i class="bi bi-info-circle"></i> <strong>Normas de visita:</strong> {{ p.visiting_rules|linebreaksbr }}</div>{% endif %}
+      {% if p.kind == 'cemetery' or p.kind == 'church' %}<p class="small text-muted mt-2"><i class="bi bi-flower1"></i> Es un espacio sagrado o de memoria: guarda silencio, respeta ceremonias y pide permiso antes de fotografiar a personas.</p>{% endif %}
+      {% if p.source %}<p class="source">Fuente: {{ p.source|urlize }}{% if p.author_entity %} · {{ p.author_entity }}{% endif %}</p>{% endif %}
+      {% include "partials/reviews_section.html" with review_kind="lugar" review_slug=p.slug %}
+    </div>
+    <aside class="col-lg-4">
+      <div class="side-card">
+        <h2 class="h5">Información práctica</h2>
+        <p class="small mb-1"><strong>Horario:</strong> {{ p.opening_hours|default:"Pendiente de confirmación" }}</p>
+        {% if p.has_location %}
+          <p class="small mb-2"><strong>Coordenadas:</strong> {{ p.latitude|unlocalize }}, {{ p.longitude|unlocalize }} {% if not p.location_verified %}<span class="badge text-bg-warning">aproximadas</span>{% endif %}</p>
+          {{ map_points|json_script:"place-points" }}
+          <div class="mini-map" data-map-points="place-points"></div>
+        {% else %}<p class="small text-muted mb-0">Ubicación pendiente de validación.</p>{% endif %}
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>{% endblock %}

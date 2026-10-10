@@ -1,0 +1,14 @@
+{% extends "core/admin/_layout.html" %}
+{% block title %}Carrusel principal{% endblock %}{% block panel_title %}Destinos del carrusel principal{% endblock %}
+{% block panel %}
+<div class="row g-4">
+  <div class="col-lg-7">
+    <form method="post" class="card card-body shadow-sm">{% csrf_token %}
+      <p class="small text-muted">Elige cuatro pueblos publicados. Cada diapositiva usa su fotografía de portada (o la primera destacada) sin repetir imágenes. Si dejas espacios vacíos se completan con destinos de demostración identificados.</p>
+      {% include "partials/form_fields.html" %}
+      <button class="btn btn-green mt-3">Guardar carrusel</button>
+    </form>
+  </div>
+  <div class="col-lg-5"><div class="side-card"><h2 class="h6">Fotografías principales</h2><p class="small mb-0">Para cambiar la imagen de una diapositiva, entra a <em>Gestionar</em> la comunidad y marca otra fotografía como «Portada».</p></div></div>
+</div>
+{% endblock %}

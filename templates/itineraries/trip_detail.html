@@ -1,0 +1,68 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}{{ trip.name }}{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">{% endblock %}
+{% block content %}
+<div class="container-xxl py-4">
+  <a href="{% url 'itineraries:trips' %}" class="small"><i class="bi bi-arrow-left"></i> Mis recorridos</a>
+  <div class="row g-4 mt-1">
+    <div class="col-lg-6">
+      <form method="post" class="card card-body shadow-sm mb-3">{% csrf_token %}
+        <h1 class="h4 mb-3">{{ trip.name }}</h1>
+        <div class="row g-2">
+          <div class="col-12">{{ form.name.label_tag }}{{ form.name }}</div>
+          <div class="col-6">{{ form.start_date.label_tag }}{{ form.start_date }}</div>
+          <div class="col-6">{{ form.end_date.label_tag }}{{ form.end_date }}{{ form.end_date.errors }}</div>
+          <div class="col-12">{{ form.notes.label_tag }}{{ form.notes }}</div>
+        </div>
+        <div class="d-flex gap-2 mt-3">
+          <button class="btn btn-green" name="save_trip" value="1"><i class="bi bi-save"></i> Guardar cambios</button>
+          {% if route_url %}<a class="btn btn-outline-green" href="{{ route_url }}" target="_blank" rel="noopener"><i class="bi bi-sign-turn-right"></i> Ruta en Google Maps</a>{% endif %}
+        </div>
+      </form>
+
+      <form method="post" action="{% url 'itineraries:trip_add_stop' trip.pk %}" class="card card-body shadow-sm mb-3">{% csrf_token %}
+        <h2 class="h6">Agregar parada</h2>
+        <div class="row g-2">
+          <div class="col-md-6">{{ add_form.place.label_tag }}{{ add_form.place }}</div>
+          <div class="col-md-6">{{ add_form.community.label_tag }}{{ add_form.community }}</div>
+          <div class="col-md-5">{{ add_form.visit_date.label_tag }}{{ add_form.visit_date }}</div>
+          <div class="col-md-7">{{ add_form.notes.label_tag }}{{ add_form.notes }}</div>
+        </div>
+        <button class="btn btn-earth mt-2"><i class="bi bi-plus"></i> Agregar</button>
+      </form>
+
+      <h2 class="h5" id="paradas">Paradas <small class="text-muted fs-6">(arrastra para reordenar o usa las flechas)</small></h2>
+      <ol class="trip-stops" id="tripStops" data-reorder-url="{% url 'itineraries:trip_reorder' trip.pk %}">
+        {% for s, sf in stop_forms %}
+        <li class="trip-stop" draggable="true" data-id="{{ s.pk }}">
+          <div class="d-flex justify-content-between align-items-start gap-2">
+            <div><span class="trip-stop__handle" aria-hidden="true"><i class="bi bi-grip-vertical"></i></span>
+              <strong class="trip-stop__order">{{ s.order }}.</strong> <a href="{{ s.url }}">{{ s.name }}</a>
+              {% if s.directions_url %}<a class="small ms-1" href="{{ s.directions_url }}" target="_blank" rel="noopener" title="Abrir en Google Maps"><i class="bi bi-geo-alt"></i></a>{% else %}<span class="small text-muted">· ubicación pendiente</span>{% endif %}
+            </div>
+            <div class="btn-group btn-group-sm">
+              <form method="post" action="{% url 'itineraries:trip_stop_action' trip.pk s.pk 'subir' %}">{% csrf_token %}<button class="btn btn-outline-secondary" {% if forloop.first %}disabled{% endif %} aria-label="Subir"><i class="bi bi-arrow-up"></i></button></form>
+              <form method="post" action="{% url 'itineraries:trip_stop_action' trip.pk s.pk 'bajar' %}">{% csrf_token %}<button class="btn btn-outline-secondary" {% if forloop.last %}disabled{% endif %} aria-label="Bajar"><i class="bi bi-arrow-down"></i></button></form>
+              <form method="post" action="{% url 'itineraries:trip_stop_action' trip.pk s.pk 'eliminar' %}" onsubmit="return confirm('¿Eliminar esta parada?')">{% csrf_token %}<button class="btn btn-outline-danger" aria-label="Eliminar"><i class="bi bi-trash"></i></button></form>
+            </div>
+          </div>
+          <form method="post" action="{% url 'itineraries:trip_stop_action' trip.pk s.pk 'actualizar' %}" class="row g-1 mt-1 align-items-center">{% csrf_token %}
+            <div class="col-5">{{ sf.visit_date }}</div>
+            <div class="col-5">{{ sf.notes }}</div>
+            <div class="col-2"><button class="btn btn-sm btn-outline-green w-100" aria-label="Guardar fecha"><i class="bi bi-check"></i></button></div>
+          </form>
+        </li>
+        {% empty %}<li class="text-muted list-unstyled">Agrega tu primera parada.</li>{% endfor %}
+      </ol>
+      <form method="post" action="{% url 'itineraries:trip_delete' trip.pk %}" onsubmit="return confirm('¿Eliminar este recorrido?')" class="mt-4">{% csrf_token %}<button class="btn btn-sm btn-outline-danger"><i class="bi bi-trash"></i> Eliminar recorrido</button></form>
+    </div>
+    <div class="col-lg-6">
+      <div class="sticky-lg-top" style="top: 90px">
+        {{ points|json_script:"trip-points" }}
+        <div class="route-map" data-map-points="trip-points" data-route="true"></div>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>{% endblock %}

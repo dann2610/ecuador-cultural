@@ -1,0 +1,20 @@
+{% extends "core/admin/_layout.html" %}{% load ec_tags %}
+{% block title %}Reseñas{% endblock %}{% block panel_title %}Moderación de reseñas{% endblock %}
+{% block panel %}
+<div class="d-flex flex-wrap gap-2 mb-3">
+  <a class="btn btn-sm {% if not current %}btn-green{% else %}btn-outline-green{% endif %}" href="?">Todas</a>
+  {% for k, l in statuses %}<a class="btn btn-sm {% if current == k %}btn-green{% else %}btn-outline-green{% endif %}" href="?estado={{ k }}">{{ l }}</a>{% endfor %}
+</div>
+{% for r in page %}
+<div class="mod-item">
+  <div><span class="kicker">{{ r.target }} · {{ r.user }} · {{ r.created_at|date:"d/m/Y" }}</span>
+    <p class="mb-1">{% stars r.rating %} {% status_badge r %}</p><p class="small mb-0">{{ r.comment }}</p></div>
+  <form method="post" class="mod-actions">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+    <input class="form-control form-control-sm" name="note" placeholder="Motivo (opcional)">
+    {% if r.status != 'hidden' %}<button class="btn btn-sm btn-outline-warning" formaction="{% url 'core:review_action' r.pk 'ocultar' %}">Ocultar</button>{% else %}<button class="btn btn-sm btn-outline-green" formaction="{% url 'core:review_action' r.pk 'publicar' %}">Publicar</button>{% endif %}
+    <button class="btn btn-sm btn-outline-danger" formaction="{% url 'core:review_action' r.pk 'eliminar' %}" onclick="return confirm('¿Eliminar definitivamente?')">Eliminar</button>
+  </form>
+</div>
+{% empty %}<div class="empty-state"><i class="bi bi-star"></i><p>No hay reseñas.</p></div>{% endfor %}
+{% include "partials/pagination.html" %}
+{% endblock %}

@@ -1,0 +1,154 @@
+{% load static %}<!doctype html>
+<html lang="es">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{% block title %}{{ SITE_NAME }}{% endblock %} · {{ SITE_NAME }}</title>
+  <meta name="description" content="{% block meta_description %}{{ SITE_SLOGAN }} Pueblos, cultura, gastronomía, artesanías y proyectos comunitarios del Ecuador.{% endblock %}">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,700&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
+  <link href="{% static 'vendor/bootstrap/bootstrap.min.css' %}" rel="stylesheet">
+  <link href="{% static 'vendor/bootstrap-icons/bootstrap-icons.min.css' %}" rel="stylesheet">
+  {% block extra_head %}{% endblock %}
+  <link href="{% static 'css/ecuador.css' %}" rel="stylesheet">
+  <link rel="icon" href="{% static 'img/logo.png' %}" type="image/svg+xml">
+</head>
+<body class="{% block body_class %}{% endblock %}">
+<a class="visually-hidden-focusable skip-link" href="#contenido">Saltar al contenido</a>
+<header class="site-header sticky-top">
+  <nav class="navbar navbar-expand-xl navbar-dark" aria-label="Navegación principal">
+    <div class="container-xxl">
+      <a class="navbar-brand d-flex align-items-center gap-2" href="{% url 'core:home' %}">
+        <img src="{% static 'img/logo.png' %}" alt="" width="110" height="125">
+        <span><strong>Ecuador</strong> Cultural</span>
+      </a>
+      <button class="navbar-toggler" type="button" data-bs-toggle="offcanvas" data-bs-target="#menuMovil" aria-controls="menuMovil" aria-label="Abrir menú">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+      <div class="offcanvas offcanvas-end text-bg-dark-green" tabindex="-1" id="menuMovil" aria-labelledby="menuMovilLabel">
+        <div class="offcanvas-header">
+          <h5 class="offcanvas-title" id="menuMovilLabel">Ecuador Cultural</h5>
+          <button type="button" class="btn-close btn-close-white" data-bs-dismiss="offcanvas" aria-label="Cerrar"></button>
+        </div>
+        <div class="offcanvas-body align-items-xl-center">
+          {% with ns=request.resolver_match.namespace un=request.resolver_match.url_name %}
+          <ul class="navbar-nav me-auto mb-2 mb-xl-0">
+            <li class="nav-item"><a class="nav-link {% if un == 'home' %}active{% endif %}" href="{% url 'core:home' %}">Inicio</a></li>
+            <li class="nav-item"><a class="nav-link {% if ns == 'communities' %}active{% endif %}" href="{% url 'communities:list' %}">Pueblos</a></li>
+            <li class="nav-item"><a class="nav-link {% if ns == 'itineraries' %}active{% endif %}" href="{% url 'itineraries:list' %}">Itinerarios</a></li>
+            <li class="nav-item"><a class="nav-link {% if un == 'map' %}active{% endif %}" href="{% url 'tourism:map' %}">Mapa</a></li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle {% if ns == 'culture' %}active{% endif %}" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">Cultura</a>
+              <ul class="dropdown-menu">
+                <li><a class="dropdown-item" href="{% url 'culture:traditions' %}"><i class="bi bi-music-note-beamed me-2"></i>Cultura y tradiciones</a></li>
+                <li><a class="dropdown-item" href="{% url 'culture:gastronomy' %}"><i class="bi bi-egg-fried me-2"></i>Gastronomía</a></li>
+                <li><a class="dropdown-item" href="{% url 'culture:crafts' %}"><i class="bi bi-palette me-2"></i>Artesanías</a></li>
+              </ul>
+            </li>
+            <li class="nav-item"><a class="nav-link {% if ns == 'donations' %}active{% endif %}" href="{% url 'donations:project_list' %}">Proyectos</a></li>
+          </ul>
+          {% endwith %}
+          <form class="d-flex my-2 my-xl-0 me-xl-3 nav-search" role="search" action="{% url 'core:search' %}">
+            <label class="visually-hidden" for="buscarGlobal">Buscar</label>
+            <input class="form-control form-control-sm" id="buscarGlobal" type="search" name="q" placeholder="Buscar pueblos, platos, rutas…" value="{{ request.GET.q|default:'' }}">
+            <button class="btn btn-sm btn-earth ms-1" type="submit" aria-label="Buscar"><i class="bi bi-search"></i></button>
+          </form>
+          <ul class="navbar-nav">
+          {% if user.is_authenticated %}
+            <li class="nav-item">
+              <a class="nav-link position-relative" href="{% url 'accounts:notifications' %}" aria-label="Notificaciones">
+                <i class="bi bi-bell"></i>{% if unread_notifications %}<span class="badge rounded-pill text-bg-warning ms-1">{{ unread_notifications }}</span>{% endif %}
+              </a>
+            </li>
+            <li class="nav-item dropdown">
+              <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown" aria-expanded="false">
+                <i class="bi bi-person-circle me-1"></i>{{ user.first_name|default:user.username }}
+              </a>
+              <ul class="dropdown-menu dropdown-menu-end">
+                {% if user.is_platform_admin %}<li><a class="dropdown-item" href="{% url 'core:admin_dashboard' %}"><i class="bi bi-speedometer2 me-2"></i>Panel administrativo</a></li>{% endif %}
+                {% if user.is_representative or user.is_platform_admin %}<li><a class="dropdown-item" href="{% url 'core:rep_dashboard' %}"><i class="bi bi-house-heart me-2"></i>Panel de comunidad</a></li><li><hr class="dropdown-divider"></li>{% endif %}
+                <li><a class="dropdown-item" href="{% url 'accounts:profile' %}"><i class="bi bi-person me-2"></i>Mi perfil</a></li>
+                <li><a class="dropdown-item" href="{% url 'accounts:favorites' %}"><i class="bi bi-heart me-2"></i>Favoritos</a></li>
+                <li><a class="dropdown-item" href="{% url 'itineraries:trips' %}"><i class="bi bi-map me-2"></i>Mis recorridos</a></li>
+                <li><a class="dropdown-item" href="{% url 'reviews:mine' %}"><i class="bi bi-chat-square-text me-2"></i>Mis reseñas</a></li>
+                <li><a class="dropdown-item" href="{% url 'donations:mine' %}"><i class="bi bi-cash-coin me-2"></i>Mis aportes</a></li>
+                <li><hr class="dropdown-divider"></li>
+                <li><form method="post" action="{% url 'accounts:logout' %}">{% csrf_token %}<button class="dropdown-item" type="submit"><i class="bi bi-box-arrow-right me-2"></i>Cerrar sesión</button></form></li>
+              </ul>
+            </li>
+          {% else %}
+            <li class="nav-item"><a class="nav-link" href="{% url 'accounts:login' %}?next={{ request.get_full_path|urlencode }}">Iniciar sesión</a></li>
+            <li class="nav-item"><a class="btn btn-earth btn-sm ms-xl-2 mt-2 mt-xl-0" href="{% url 'accounts:signup' %}">Registrarse</a></li>
+          {% endif %}
+          </ul>
+        </div>
+      </div>
+    </div>
+  </nav>
+</header>
+
+<main id="contenido">
+  {% if messages %}
+  <div class="container-xxl pt-3" aria-live="polite">
+    {% for message in messages %}
+    <div class="alert alert-{% if message.tags == 'error' %}danger{% else %}{{ message.tags|default:'info' }}{% endif %} alert-dismissible fade show shadow-sm" role="alert">
+      {{ message }}<button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Cerrar"></button>
+    </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+  {% block content %}{% endblock %}
+</main>
+
+<footer class="site-footer mt-5">
+  <div class="container-xxl py-5">
+    <div class="row g-4">
+      <div class="col-lg-4">
+        <a class="d-flex align-items-center gap-2 text-white text-decoration-none mb-2" href="{% url 'core:home' %}">
+          <img src="{% static 'img/logo.svg' %}" alt="" width="34" height="34"><span class="fs-5"><strong>Ecuador</strong> Cultural</span>
+        </a>
+        <p class="footer-slogan">{{ SITE_SLOGAN }}</p>
+        <p class="small opacity-75 mb-0">Plataforma para visibilizar pueblos y comunidades del Ecuador, preservar su patrimonio y apoyar sus iniciativas. La información se publica tras revisión y con fuentes identificadas.</p>
+      </div>
+      <div class="col-6 col-lg-2">
+        <h2 class="footer-title">Explorar</h2>
+        <ul class="list-unstyled footer-links">
+          <li><a href="{% url 'communities:list' %}">Pueblos</a></li>
+          <li><a href="{% url 'itineraries:list' %}">Itinerarios</a></li>
+          <li><a href="{% url 'tourism:map' %}">Mapa interactivo</a></li>
+          <li><a href="{% url 'donations:project_list' %}">Proyectos</a></li>
+        </ul>
+      </div>
+      <div class="col-6 col-lg-2">
+        <h2 class="footer-title">Cultura</h2>
+        <ul class="list-unstyled footer-links">
+          <li><a href="{% url 'culture:traditions' %}">Tradiciones</a></li>
+          <li><a href="{% url 'culture:gastronomy' %}">Gastronomía</a></li>
+          <li><a href="{% url 'culture:crafts' %}">Artesanías</a></li>
+        </ul>
+      </div>
+      <div class="col-lg-4">
+        <h2 class="footer-title">Comunidades</h2>
+        <p class="small opacity-75">¿Representas a una comunidad? Regístrala para administrar su información, fotografías y proyectos.</p>
+        <a class="btn btn-earth btn-sm" href="{% url 'communities:request' %}"><i class="bi bi-house-add me-1"></i>Registrar mi comunidad</a>
+        {% if SITE_CONTACT_EMAIL %}<p class="small mt-3 mb-0"><i class="bi bi-envelope me-1"></i><a href="mailto:{{ SITE_CONTACT_EMAIL }}">{{ SITE_CONTACT_EMAIL }}</a></p>{% endif %}
+      </div>
+    </div>
+    <hr class="border-light opacity-25 my-4">
+    <div class="d-flex flex-column flex-md-row justify-content-between small opacity-75 gap-2">
+      <span>© {% now "Y" %} Ecuador Cultural · Proyecto académico</span>
+      <span><a href="{% url 'core:about' %}">Acerca del proyecto</a> · <a href="{% url 'core:privacy' %}">Política de privacidad</a> · <a href="{% url 'core:terms' %}">Condiciones de uso</a></span>
+    </div>
+    <p class="small opacity-50 mt-2 mb-0">Mapas © colaboradores de <a href="https://www.openstreetmap.org/copyright" rel="noopener">OpenStreetMap</a>.</p>
+  </div>
+</footer>
+
+{% include "partials/chatbot.html" %}
+
+<script src="{% static 'vendor/bootstrap/bootstrap.bundle.min.js' %}"></script>
+<script src="{% static 'js/ecuador.js' %}" defer></script>
+<script src="{% static 'js/chatbot.js' %}" defer></script>
+{% block extra_js %}{% endblock %}
+</body>
+</html>

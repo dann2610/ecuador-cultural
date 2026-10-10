@@ -1,0 +1,125 @@
+{% extends "base.html" %}{% load static ec_tags humanize l10n %}
+{% block title %}{{ c.name }}{% endblock %}
+{% block meta_description %}{{ c.short_description }}{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">{% endblock %}
+{% block content %}
+{% with cover=c.cover_photo %}
+<section class="detail-hero">
+  {% if cover %}<img src="{{ cover.image.url }}" alt="{{ cover.alt_text }}" class="detail-hero__img">
+  {% else %}<div class="detail-hero__img photo-placeholder hero-placeholder"><i class="bi bi-camera"></i><span>Fotografía de portada pendiente</span></div>{% endif %}
+  <div class="hero__overlay"></div>
+  <div class="container-xxl detail-hero__content">
+    <nav aria-label="Ruta de navegación"><ol class="breadcrumb breadcrumb-light"><li class="breadcrumb-item"><a href="{% url 'communities:list' %}">Pueblos</a></li><li class="breadcrumb-item"><a href="{% url 'communities:list' %}?province={{ c.province.slug }}">{{ c.province.name }}</a></li><li class="breadcrumb-item active" aria-current="page">{{ c.name }}</li></ol></nav>
+    <h1>{{ c.name }}</h1>
+    <p class="detail-hero__loc"><i class="bi bi-geo-alt-fill"></i> {% if c.parish %}Parroquia {{ c.parish }} · {% endif %}{% if c.canton %}Cantón {{ c.canton.name }} · {% endif %}Provincia de {{ c.province.name }} · {{ c.region }}</p>
+    <div class="chips">{% for cat in c.categories.all %}<span class="chip chip-light"><i class="bi {{ cat.icon }}"></i>{{ cat.name }}</span>{% endfor %}{% demo_badge c %}{% if not c.is_published %} {% status_badge c %}{% endif %}</div>
+    {% if cover %}<p class="hero__credit">Foto: {{ cover.author }} · {{ cover.license }}{% if cover.is_placeholder %} · imagen de demostración{% endif %}</p>{% endif %}
+  </div>
+</section>
+{% endwith %}
+
+<div class="container-xxl">
+  <div class="action-bar shadow-sm">
+    {% if c.directions_url %}
+      <a class="btn btn-green" href="{{ c.directions_url }}" target="_blank" rel="noopener"><i class="bi bi-sign-turn-right"></i> Cómo llegar</a>
+    {% else %}
+      <span class="btn btn-outline-secondary disabled" aria-disabled="true"><i class="bi bi-sign-turn-right"></i> Ubicación pendiente de validación</span>
+    {% endif %}
+    {% if user.is_authenticated %}
+    <form method="post" action="{% url 'communities:favorite' c.slug %}" class="js-fav">{% csrf_token %}
+      <button class="btn btn-outline-green btn-fav-text{% if is_favorite %} is-fav{% endif %}" type="submit" aria-pressed="{{ is_favorite|yesno:'true,false' }}"><i class="bi bi-heart{% if is_favorite %}-fill{% endif %}"></i> <span>{% if is_favorite %}En favoritos{% else %}Guardar en favoritos{% endif %}</span></button>
+    </form>
+    {% else %}<a class="btn btn-outline-green" href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}"><i class="bi bi-heart"></i> Guardar en favoritos</a>{% endif %}
+    <button class="btn btn-outline-green" type="button" data-share data-title="{{ c.name }} · Ecuador Cultural" data-text="{{ c.short_description|truncatechars:120 }}"><i class="bi bi-share"></i> Compartir</button>
+    <a class="btn btn-earth" href="#proyectos"><i class="bi bi-heart-pulse"></i> Apoyar a esta comunidad</a>
+    {% if can_manage %}<a class="btn btn-outline-dark ms-lg-auto" href="{% url 'core:manage_community' c.slug %}"><i class="bi bi-pencil-square"></i> Administrar</a>{% endif %}
+  </div>
+  {% if c.has_location and not c.location_verified %}<p class="small text-muted mt-2"><i class="bi bi-exclamation-triangle"></i> La ubicación mostrada es aproximada y está pendiente de validación.</p>{% endif %}
+
+  <div class="row g-4 mt-1">
+    <div class="col-lg-8">
+      <p class="lead">{{ c.short_description }}</p>
+      <ul class="nav nav-pills detail-tabs" role="tablist">
+        <li class="nav-item" role="presentation"><button class="nav-link active" data-bs-toggle="pill" data-bs-target="#tab-cultura" type="button" role="tab">Historia y cultura</button></li>
+        <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-sabores" type="button" role="tab">Gastronomía y artesanías</button></li>
+        <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-fiestas" type="button" role="tab">Festividades</button></li>
+        <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-lugares" type="button" role="tab">Lugares y servicios</button></li>
+        <li class="nav-item" role="presentation"><button class="nav-link" data-bs-toggle="pill" data-bs-target="#tab-galeria" type="button" role="tab">Galería</button></li>
+      </ul>
+      <div class="tab-content pt-3">
+        <div class="tab-pane fade show active" id="tab-cultura" role="tabpanel">
+          <span id="cultura"></span>
+          {% if c.history %}<h2 class="h4">Historia documentada</h2><div class="prose">{{ c.history|linebreaks }}</div>{% endif %}
+          {% if c.identity %}<h2 class="h4">Cultura e identidad local</h2><div class="prose">{{ c.identity|linebreaks }}</div>{% endif %}
+          {% if c.clothing %}<h2 class="h4">Vestimenta tradicional</h2><div class="prose">{{ c.clothing|linebreaks }}</div>{% endif %}
+          {% if c.music_dance %}<h2 class="h4">Música y danzas</h2><div class="prose">{{ c.music_dance|linebreaks }}</div>{% endif %}
+          {% for kind, label in content_kinds %}{% with items=contents_by_kind|get_item:kind %}{% if items %}
+            <h2 class="h4">{{ label }}</h2>
+            {% for item in items %}<article class="content-block"><h3 class="h6">{{ item.title }} {% demo_badge item %}</h3><div class="prose">{{ item.description|linebreaks }}</div>
+              {% if item.source %}<p class="source">Fuente: {{ item.source|urlize }}</p>{% endif %}</article>{% endfor %}
+          {% endif %}{% endwith %}{% endfor %}
+          {% if c.activities %}<h2 class="h4">Actividades turísticas</h2><div class="prose">{{ c.activities|linebreaks }}</div>{% endif %}
+          {% if c.source %}<p class="source">Fuente de la información general: {{ c.source|urlize }}{% if c.author_entity %} · {{ c.author_entity }}{% endif %}</p>{% endif %}
+          {% if not c.history and not c.identity and not contents_by_kind.history and not contents_by_kind.tradition %}<p class="text-muted"><i class="bi bi-journal"></i> La comunidad aún no ha publicado su historia documentada.</p>{% endif %}
+        </div>
+        <div class="tab-pane fade" id="tab-sabores" role="tabpanel">
+          <h2 class="h4" id="gastronomia">Gastronomía</h2>
+          <div class="row g-3">{% for d in dishes %}<div class="col-md-6">{% include "culture/_item.html" with item=d %}</div>{% empty %}<p class="text-muted">Sin platos documentados todavía.</p>{% endfor %}</div>
+          <h2 class="h4 mt-4" id="artesanias">Artesanías</h2>
+          <div class="row g-3">{% for d in crafts %}<div class="col-md-6">{% include "culture/_item.html" with item=d %}</div>{% empty %}<p class="text-muted">Sin artesanías documentadas todavía.</p>{% endfor %}</div>
+        </div>
+        <div class="tab-pane fade" id="tab-fiestas" role="tabpanel">
+          <span id="festividades"></span>
+          {% for f in festivities %}<article class="content-block"><h3 class="h5">{{ f.name }} {% demo_badge f %}</h3>
+            <p class="small text-muted"><i class="bi bi-calendar-event"></i> {{ f.period|default:"Fecha por confirmar" }}{% if f.location %} · <i class="bi bi-geo"></i> {{ f.location }}{% endif %}</p>
+            <div class="prose">{{ f.description|linebreaks }}</div>
+            {% if f.history %}<details><summary>Historia</summary>{{ f.history|linebreaks }}</details>{% endif %}
+            {% if f.visitor_tips %}<div class="respect-note"><i class="bi bi-hand-thumbs-up"></i> <strong>Recomendaciones para visitantes:</strong> {{ f.visitor_tips }}</div>{% endif %}
+            {% if f.source %}<p class="source">Fuente: {{ f.source|urlize }}</p>{% endif %}</article>
+          {% empty %}<p class="text-muted">Sin festividades registradas todavía.</p>{% endfor %}
+        </div>
+        <div class="tab-pane fade" id="tab-lugares" role="tabpanel">
+          {% if heritage %}<h2 class="h4">Iglesias, museos, cementerios y sitios históricos</h2><div class="row g-3 mb-4">{% for p in heritage %}<div class="col-6 col-md-4">{% include "partials/place_card.html" %}</div>{% endfor %}</div>{% endif %}
+          {% if nature %}<h2 class="h4">Parques, cascadas y miradores</h2><div class="row g-3 mb-4">{% for p in nature %}<div class="col-6 col-md-4">{% include "partials/place_card.html" %}</div>{% endfor %}</div>{% endif %}
+          {% if other_places %}<h2 class="h4">Otros atractivos</h2><div class="row g-3 mb-4">{% for p in other_places %}<div class="col-6 col-md-4">{% include "partials/place_card.html" %}</div>{% endfor %}</div>{% endif %}
+          {% if service_places %}<h2 class="h4">Restaurantes y hospedajes</h2><div class="row g-3 mb-4">{% for p in service_places %}<div class="col-6 col-md-4">{% include "partials/place_card.html" %}</div>{% endfor %}</div>{% endif %}
+          {% if services %}<h2 class="h4">Servicios turísticos</h2><ul class="list-group mb-3">{% for s in services %}<li class="list-group-item"><strong>{{ s.name }}</strong> · {{ s.get_kind_display }} {% demo_badge s %}<br><span class="small">{{ s.description }}</span>{% if s.contact %}<br><span class="small"><i class="bi bi-telephone"></i> {{ s.contact }}</span>{% endif %}</li>{% endfor %}</ul>{% endif %}
+          {% if not heritage and not nature and not other_places and not service_places and not services %}<p class="text-muted">Aún no hay lugares registrados para este pueblo.</p>{% endif %}
+        </div>
+        <div class="tab-pane fade" id="tab-galeria" role="tabpanel">
+          <div class="gallery">
+            {% for ph in photos %}
+            <figure class="gallery__item">
+              <a href="{{ ph.image.url }}" target="_blank" rel="noopener"><img src="{{ ph.card_url }}" alt="{{ ph.alt_text }}" loading="lazy" width="720" height="480"></a>
+              <figcaption><strong>{{ ph.title }}</strong>{% if ph.place %} · {{ ph.place.name }}{% endif %}<br><span>{{ ph.author }} · {{ ph.license }}{% if ph.is_placeholder %} · demostración{% endif %}</span></figcaption>
+            </figure>
+            {% empty %}<p class="text-muted">Sin fotografías autorizadas todavía.</p>{% endfor %}
+          </div>
+        </div>
+      </div>
+      {% include "partials/reviews_section.html" with review_kind="pueblo" review_slug=c.slug %}
+    </div>
+
+    <aside class="col-lg-4">
+      <div class="side-card">
+        <h2 class="h5"><i class="bi bi-map"></i> Ubicación</h2>
+        {% if map_points %}
+          {{ map_points|json_script:"detail-points" }}<div class="mini-map" data-map-points="detail-points"></div>
+          {% if c.has_location %}<p class="small mt-2 mb-0">Coordenadas: {{ c.latitude|unlocalize }}, {{ c.longitude|unlocalize }}{% if not c.location_verified %} <span class="badge text-bg-warning">aproximadas</span>{% endif %}</p>{% endif %}
+        {% else %}<p class="text-muted small mb-0">Ubicación pendiente de validación.</p>{% endif %}
+      </div>
+      <div class="side-card">
+        <h2 class="h5"><i class="bi bi-signpost-split"></i> Itinerarios relacionados</h2>
+        {% for it in itineraries %}<a class="list-row" href="{{ it.get_absolute_url }}"><strong>{{ it.name }}</strong><span>{{ it.get_kind_display }} · {{ it.duration_days }} día(s)</span></a>
+        {% empty %}<p class="text-muted small">Sin itinerarios que incluyan este pueblo. <a href="{% url 'itineraries:trips' %}">Crea tu recorrido</a>.</p>{% endfor %}
+      </div>
+      <div class="side-card" id="proyectos">
+        <h2 class="h5"><i class="bi bi-heart"></i> Proyectos comunitarios</h2>
+        {% for project in projects %}<a class="list-row" href="{{ project.get_absolute_url }}"><strong>{{ project.name }}</strong><span>{{ project.get_phase_display }} · ${{ project.confirmed_amount|floatformat:0|intcomma }} de ${{ project.goal_amount|floatformat:0|intcomma }}</span></a>
+        {% empty %}<p class="text-muted small mb-0">Esta comunidad aún no tiene proyectos publicados.</p>{% endfor %}
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>{% endblock %}

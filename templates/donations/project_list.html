@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% block title %}Proyectos comunitarios{% endblock %}
+{% block content %}
+<section class="page-hero"><div class="container-xxl">
+  <h1><i class="bi bi-heart"></i> Proyectos comunitarios</h1>
+  <p>Iniciativas de las propias comunidades: conservación de tradiciones, talleres artesanales, senderos, patrimonio y más. Solo se muestran como recaudados los aportes verificados.</p>
+  <a class="btn btn-earth" href="{% url 'donations:donate' %}"><i class="bi bi-cash-coin"></i> Registrar un aporte</a>
+</div></section>
+<div class="container-xxl">
+  <div class="d-flex flex-wrap gap-2 mb-3">
+    <a class="btn btn-sm {% if not current_phase %}btn-green{% else %}btn-outline-green{% endif %}" href="?">Todos</a>
+    {% for k, l in phases %}<a class="btn btn-sm {% if current_phase == k %}btn-green{% else %}btn-outline-green{% endif %}" href="?estado={{ k }}">{{ l }}</a>{% endfor %}
+  </div>
+  <div class="row g-4">
+    {% for project in page %}<div class="col-md-6 col-lg-4">{% include "donations/_card.html" %}</div>
+    {% empty %}<div class="col-12"><div class="empty-state"><i class="bi bi-heart"></i><p>No hay proyectos publicados en esta categoría.</p></div></div>{% endfor %}
+  </div>
+  {% include "partials/pagination.html" %}
+</div>
+{% endblock %}

@@ -1,0 +1,33 @@
+{% extends "base.html" %}{% load ec_tags %}
+{% block title %}Cultura y tradiciones{% endblock %}
+{% block content %}
+<section class="page-hero"><div class="container-xxl"><h1><i class="bi bi-music-note-beamed"></i> Cultura y tradiciones</h1>
+  <p>Festividades, costumbres, vestimenta, música y danzas documentadas por las comunidades. Participa siempre con respeto, especialmente en ceremonias y espacios sagrados.</p></div></section>
+<div class="container-xxl">
+  <form class="filter-bar card card-body shadow-sm" method="get">
+    <div class="row g-2 align-items-end">
+      <div class="col-md-6"><label class="form-label" for="tq">Buscar</label><input class="form-control" id="tq" name="q" value="{{ request.GET.q }}"></div>
+      <div class="col-md-5"><label class="form-label" for="tp">Provincia</label><select class="form-select" id="tp" name="provincia"><option value="">Todas</option>{% for p in provinces %}<option value="{{ p.slug }}" {% if request.GET.provincia == p.slug %}selected{% endif %}>{{ p.name }}</option>{% endfor %}</select></div>
+      <div class="col-md-1 d-grid"><button class="btn btn-green" aria-label="Filtrar"><i class="bi bi-funnel"></i></button></div>
+    </div>
+  </form>
+  <h2 class="section-title mt-4">Festividades</h2>
+  <div class="row g-4">
+    {% for f in festivities %}
+    <div class="col-md-6 col-lg-4"><article class="culture-item h-100">
+      {% if f.image %}<img src="{{ f.image.url }}" alt="{{ f.name }}" class="culture-item__img" loading="lazy">{% else %}<div class="photo-placeholder sm"><i class="bi bi-calendar-heart"></i><span>Fotografía pendiente</span></div>{% endif %}
+      <div class="culture-item__body"><h3 class="h6">{{ f.name }} {% demo_badge f %}</h3>
+        <p class="small text-muted mb-1"><i class="bi bi-calendar-event"></i> {{ f.period|default:"Fecha por confirmar" }} · <a href="{{ f.get_absolute_url }}">{{ f.community.name }}</a></p>
+        <p class="small">{{ f.description|truncatechars:200 }}</p></div>
+    </article></div>
+    {% empty %}<p class="text-muted">Sin festividades publicadas.</p>{% endfor %}
+  </div>
+  <h2 class="section-title mt-5">Costumbres, vestimenta, música y danzas</h2>
+  <div class="row g-3">
+    {% for c in contents %}
+    <div class="col-md-6"><article class="content-block h-100"><span class="kicker">{{ c.get_kind_display }} · <a href="{{ c.get_absolute_url }}">{{ c.community.name }}</a></span>
+      <h3 class="h6 mt-1">{{ c.title }} {% demo_badge c %}</h3><p class="small mb-0">{{ c.description|truncatechars:260 }}</p></article></div>
+    {% empty %}<p class="text-muted">Sin contenidos publicados.</p>{% endfor %}
+  </div>
+</div>
+{% endblock %}

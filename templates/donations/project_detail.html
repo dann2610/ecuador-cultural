@@ -1,0 +1,50 @@
+{% extends "base.html" %}{% load ec_tags humanize %}
+{% block title %}{{ project.name }}{% endblock %}
+{% block content %}
+<div class="container-xxl py-4">
+  <nav aria-label="Ruta de navegación"><ol class="breadcrumb"><li class="breadcrumb-item"><a href="{% url 'donations:project_list' %}">Proyectos</a></li><li class="breadcrumb-item"><a href="{{ project.community.get_absolute_url }}">{{ project.community.name }}</a></li><li class="breadcrumb-item active">{{ project.name }}</li></ol></nav>
+  <div class="row g-4">
+    <div class="col-lg-7">
+      {% if project.image %}<img src="{{ project.image.url }}" class="img-fluid rounded-4 mb-3 w-100 project-cover" alt="{{ project.name }}">{% if project.image_credit %}<p class="source">Foto: {{ project.image_credit }}</p>{% endif %}{% endif %}
+      <span class="kicker">{{ project.get_phase_display }}</span>
+      <h1>{{ project.name }} {% demo_badge project %}{% if not project.is_published %} {% status_badge project %}{% endif %}</h1>
+      <p class="text-muted"><i class="bi bi-people"></i> Comunidad beneficiaria: <a href="{{ project.community.get_absolute_url }}">{{ project.community.name }}</a> · Responsable: {{ project.responsible_name }}</p>
+      <h2 class="h5">Descripción</h2><div class="prose">{{ project.description|linebreaks }}</div>
+      <h2 class="h5">Objetivo</h2><div class="prose">{{ project.objective|linebreaks }}</div>
+      <p class="small text-muted">Inicio: {{ project.start_date|date:"j \d\e F Y" }}{% if project.deadline %} · Fecha límite: {{ project.deadline|date:"j \d\e F Y" }}{% endif %}</p>
+      <h2 class="h4 mt-4" id="avances">Avances y evidencias</h2>
+      {% if can_manage %}<a class="btn btn-sm btn-outline-green mb-2" href="{% url 'donations:add_update' project.slug %}"><i class="bi bi-plus"></i> Publicar avance</a>{% endif %}
+      {% for u in updates %}
+      <article class="content-block"><time class="small text-muted">{{ u.date|date:"j M Y" }}</time><h3 class="h6">{{ u.title }}</h3><div class="prose small">{{ u.description|linebreaks }}</div>
+        {% if u.evidence %}<img src="{{ u.evidence.url }}" class="img-fluid rounded" alt="Evidencia: {{ u.title }}" loading="lazy">{% endif %}</article>
+      {% empty %}<p class="text-muted">Aún no se han registrado avances.</p>{% endfor %}
+    </div>
+    <aside class="col-lg-5">
+      <div class="side-card donation-box">
+        <h2 class="h5">Transparencia del proyecto</h2>
+        <p class="display-6 mb-0 fw-bold text-green">${{ project.confirmed_amount|floatformat:2|intcomma }}</p>
+        <p class="small text-muted">confirmados de una meta de ${{ project.goal_amount|floatformat:2|intcomma }} · {{ confirmed_count }} aporte{{ confirmed_count|pluralize }} verificado{{ confirmed_count|pluralize }}</p>
+        <div class="progress mb-3" role="progressbar" aria-valuenow="{{ project.progress_percent }}" aria-valuemin="0" aria-valuemax="100"><div class="progress-bar" style="width: {{ project.progress_percent }}%">{{ project.progress_percent }}%</div></div>
+        {% if recent_confirmed %}<ul class="list-unstyled small mb-3">{% for d in recent_confirmed %}<li class="d-flex justify-content-between border-bottom py-1"><span>{{ d.public_name }}</span><span>${{ d.amount|floatformat:2 }}</span></li>{% endfor %}</ul>{% endif %}
+        {% if project.payment_instructions %}<div class="respect-note small mb-3"><strong>Cómo aportar:</strong><br>{{ project.payment_instructions|linebreaksbr }}</div>{% endif %}
+        {% if form %}
+          {% if user.is_authenticated %}
+          <form method="post" action="{% url 'donations:donate' %}" enctype="multipart/form-data">{% csrf_token %}
+            <input type="hidden" name="project" value="{{ project.pk }}">
+            <div class="mb-2">{{ form.amount.label_tag }}{{ form.amount }}</div>
+            <div class="mb-2">{{ form.method.label_tag }}{{ form.method }}</div>
+            <div class="mb-2">{{ form.transaction_reference.label_tag }}{{ form.transaction_reference }}<div class="form-text">{{ form.transaction_reference.help_text }}</div></div>
+            <div class="mb-2">{{ form.receipt.label_tag }}{{ form.receipt }}</div>
+            <div class="mb-2">{{ form.donor_name.label_tag }}{{ form.donor_name }}</div>
+            <div class="form-check mb-3">{{ form.is_anonymous }} <label class="form-check-label" for="{{ form.is_anonymous.id_for_label }}">{{ form.is_anonymous.label }}</label></div>
+            <button class="btn btn-earth w-100"><i class="bi bi-heart"></i> Registrar mi aporte</button>
+          </form>
+          <p class="small text-muted mt-2 mb-0">Esta plataforma todavía no procesa pagos: registra tu aporte y el administrador lo confirmará al verificar el comprobante. Nunca ingreses datos de tarjetas.</p>
+          {% else %}<a class="btn btn-earth w-100" href="{% url 'accounts:login' %}?next={{ request.path|urlencode }}">Inicia sesión para registrar tu aporte</a>{% endif %}
+        {% else %}<p class="text-muted mb-0">Este proyecto no recibe aportes en este momento.</p>{% endif %}
+        {% if can_manage %}<a class="btn btn-sm btn-outline-dark w-100 mt-3" href="{% url 'donations:project_donations' project.slug %}">Ver aportes registrados</a>{% endif %}
+      </div>
+    </aside>
+  </div>
+</div>
+{% endblock %}

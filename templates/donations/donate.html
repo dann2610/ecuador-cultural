@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Registrar un aporte{% endblock %}
+{% block content %}
+<div class="container-xxl py-4">
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <h1 class="h3"><i class="bi bi-heart"></i> Registrar un aporte</h1>
+      <p>Elige un proyecto, realiza tu aporte con las instrucciones publicadas en su página y registra aquí el monto y el comprobante.</p>
+      <form method="post" enctype="multipart/form-data" class="card card-body shadow-sm">{% csrf_token %}
+        {% include "partials/form_fields.html" %}
+        <button class="btn btn-earth mt-3"><i class="bi bi-send"></i> Registrar aporte</button>
+      </form>
+    </div>
+    <div class="col-lg-5">
+      <div class="side-card">
+        <h2 class="h5">¿Cómo se confirma?</h2>
+        <ol class="small mb-0">
+          <li>Tu aporte queda como <em>compromiso registrado</em> o <em>comprobante en verificación</em>.</li>
+          <li>El administrador verifica con la comunidad que el dinero fue recibido.</li>
+          <li>Solo entonces se suma al total confirmado del proyecto y recibes una notificación.</li>
+        </ol>
+        <p class="small text-muted mt-2 mb-0">Nunca guardamos números de tarjeta ni códigos de seguridad.</p>
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

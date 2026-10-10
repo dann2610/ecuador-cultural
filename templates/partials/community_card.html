@@ -1,0 +1,45 @@
+{% load ec_tags %}{% with photos=c.featured_photos %}
+<article class="town-card h-100">
+  <a class="town-card__media" href="{{ c.get_absolute_url }}" aria-label="Descubrir {{ c.name }}">
+    {% if photos %}
+    <div class="rotator" {% if photos|length > 1 %}data-rotator{% endif %}>
+      {% for p in photos %}
+      <img class="rotator__img{% if forloop.first %} is-active{% endif %}"
+           {% if forloop.first %}src="{{ p.card_url }}" loading="lazy"{% else %}data-src="{{ p.card_url }}"{% endif %}
+           alt="{{ p.alt_text }}" width="720" height="480" decoding="async"
+           data-credit="{{ p.author }}{% if p.is_placeholder %} · imagen de demostración{% endif %}">
+      {% endfor %}
+    </div>
+    {% if photos.0.is_placeholder %}<span class="media-flag"><i class="bi bi-image"></i> Imagen de demostración</span>{% endif %}
+    {% else %}
+    <div class="photo-placeholder" role="img" aria-label="Fotografía pendiente para {{ c.name }}">
+      <i class="bi bi-camera"></i><span>Fotografía pendiente</span>
+    </div>
+    {% endif %}
+    <span class="town-card__region">{{ c.province.get_region_display }}</span>
+  </a>
+  <div class="town-card__body">
+    <div class="d-flex justify-content-between align-items-start gap-2">
+      <div>
+        <h3 class="town-card__title"><a href="{{ c.get_absolute_url }}">{{ c.name }}</a></h3>
+        <p class="town-card__place"><i class="bi bi-geo-alt"></i> {% if c.canton %}{{ c.canton.name }}, {% endif %}{{ c.province.name }}</p>
+      </div>
+      {% if user.is_authenticated %}
+      <form method="post" action="{% url 'communities:favorite' c.slug %}" class="js-fav">{% csrf_token %}
+        <input type="hidden" name="next" value="{{ request.get_full_path }}">
+        <button class="btn-fav{% if c.pk in fav_ids %} is-fav{% endif %}" type="submit" aria-pressed="{% if c.pk in fav_ids %}true{% else %}false{% endif %}" aria-label="Guardar {{ c.name }} en favoritos">
+          <i class="bi bi-heart{% if c.pk in fav_ids %}-fill{% endif %}"></i></button>
+      </form>
+      {% else %}
+      <a class="btn-fav" href="{% url 'accounts:login' %}?next={{ request.get_full_path|urlencode }}" aria-label="Inicia sesión para guardar en favoritos"><i class="bi bi-heart"></i></a>
+      {% endif %}
+    </div>
+    <p class="town-card__desc">{{ c.short_description|truncatechars:130 }}</p>
+    <div class="chips">
+      {% for cat in c.categories.all|slice:":3" %}<span class="chip"><i class="bi {{ cat.icon }}"></i>{{ cat.name }}</span>{% endfor %}
+      {% demo_badge c %}
+    </div>
+    <a class="btn btn-green btn-sm mt-auto" href="{{ c.get_absolute_url }}">Descubrir destino <i class="bi bi-arrow-right"></i></a>
+  </div>
+</article>
+{% endwith %}

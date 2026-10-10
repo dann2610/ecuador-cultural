@@ -1,0 +1,43 @@
+{% load ec_tags %}
+<section id="resenas" class="mt-4">
+  <div class="d-flex flex-wrap align-items-center gap-3 mb-3">
+    <h2 class="section-title mb-0">Reseñas y puntuaciones</h2>
+    {% if rating.total %}<span class="rating-summary">{% stars rating.avg %} <strong>{{ rating.avg|floatformat:1 }}</strong> <span class="text-muted">({{ rating.total }} reseña{{ rating.total|pluralize }})</span></span>
+    {% else %}<span class="text-muted">Aún no hay reseñas. ¡Sé la primera persona en compartir su experiencia!</span>{% endif %}
+  </div>
+  {% if user.is_authenticated %}
+    {% if user_review %}
+      <div class="alert alert-light border d-flex flex-wrap justify-content-between align-items-center gap-2">
+        <span>Tu reseña: {% stars user_review.rating %} · {{ user_review.get_status_display }}</span>
+        <span>
+          <a class="btn btn-sm btn-outline-green" href="{% url 'reviews:edit' user_review.pk %}">Editar</a>
+          <form class="d-inline" method="post" action="{% url 'reviews:delete' user_review.pk %}" onsubmit="return confirm('¿Eliminar tu reseña?')">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Eliminar</button></form>
+        </span>
+      </div>
+    {% elif review_form %}
+      <form class="card card-body mb-3 review-form" method="post" enctype="multipart/form-data" action="{% url 'reviews:create' review_kind review_slug %}">{% csrf_token %}
+        <h3 class="h6">Comparte tu experiencia</h3>
+        <div class="row g-2">
+          <div class="col-md-3">{{ review_form.rating.label_tag }}{{ review_form.rating }}</div>
+          <div class="col-md-9">{{ review_form.comment.label_tag }}{{ review_form.comment }}</div>
+          <div class="col-md-9">{{ review_form.photo.label_tag }}{{ review_form.photo }}</div>
+          <div class="col-md-3 d-flex align-items-end"><button class="btn btn-green w-100" type="submit">Publicar reseña</button></div>
+        </div>
+      </form>
+    {% endif %}
+  {% else %}
+    <p><a href="{% url 'accounts:login' %}?next={{ request.get_full_path|urlencode }}">Inicia sesión</a> para publicar una reseña.</p>
+  {% endif %}
+  <div class="row g-3">
+  {% for r in reviews %}
+    <div class="col-md-6">
+      <article class="review-card h-100">
+        <div class="d-flex justify-content-between"><strong>{{ r.user.first_name|default:r.user.username }}</strong>{% stars r.rating %}</div>
+        <time class="small text-muted" datetime="{{ r.created_at|date:'c' }}">{{ r.created_at|date:"j M Y" }}</time>
+        <p class="mt-2 mb-0">{{ r.comment|linebreaksbr }}</p>
+        {% if r.photo %}<img src="{{ r.photo.url }}" class="img-fluid rounded mt-2 review-photo" alt="Foto de la reseña de {{ r.user.username }}" loading="lazy">{% endif %}
+      </article>
+    </div>
+  {% endfor %}
+  </div>
+</section>

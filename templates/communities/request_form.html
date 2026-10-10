@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block title %}Registrar mi comunidad{% endblock %}
+{% block content %}
+<div class="container-xxl py-4">
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <h1 class="h2">Registrar mi comunidad</h1>
+      <p>Envía esta solicitud como representante de tu pueblo o comunidad. El administrador la revisará; al aprobarla podrás completar la información, subir fotografías autorizadas y crear proyectos.</p>
+      <form method="post" class="card card-body shadow-sm">{% csrf_token %}
+        {% include "partials/form_fields.html" %}
+        <button class="btn btn-green mt-3" type="submit"><i class="bi bi-send"></i> Enviar solicitud</button>
+      </form>
+    </div>
+    <div class="col-lg-5">
+      <div class="side-card">
+        <h2 class="h5">¿Qué sigue?</h2>
+        <ol class="small mb-0"><li>El administrador revisa tu solicitud.</li><li>Si se aprueba, tu cuenta pasa a ser de representante y se crea el perfil del pueblo como borrador.</li><li>Completas historia, cultura, lugares y fotografías con sus fuentes y permisos.</li><li>Envías el contenido a revisión y se publica.</li></ol>
+      </div>
+      {% if my_requests %}
+      <div class="side-card"><h2 class="h5">Mis solicitudes</h2>
+        <ul class="list-unstyled mb-0">{% for r in my_requests %}<li class="d-flex justify-content-between border-bottom py-2"><span>{{ r.community_name }}</span><span class="badge text-bg-{% if r.status == 'approved' %}success{% elif r.status == 'rejected' %}danger{% else %}warning{% endif %}">{{ r.get_status_display }}</span></li>{% endfor %}</ul>
+      </div>
+      {% endif %}
+    </div>
+  </div>
+</div>
+{% endblock %}

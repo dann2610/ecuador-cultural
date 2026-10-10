@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}Pueblos y comunidades{% endblock %}
+{% block content %}
+<section class="page-hero">
+  <div class="container-xxl">
+    <h1>Pueblos y comunidades del Ecuador</h1>
+    <p>Descubre pueblos de la Costa, Sierra, Amazonía y Galápagos. El catálogo crece a medida que las comunidades publican información verificada.</p>
+  </div>
+</section>
+<div class="container-xxl">
+  <form class="filter-bar card card-body shadow-sm" method="get" role="search" aria-label="Filtrar pueblos">
+    <div class="row g-2 align-items-end">
+      <div class="col-lg-3">{{ form.q.label_tag }}{{ form.q }}</div>
+      <div class="col-sm-6 col-lg-2">{{ form.province.label_tag }}{{ form.province }}</div>
+      <div class="col-sm-6 col-lg-2">{{ form.canton.label_tag }}{{ form.canton }}</div>
+      <div class="col-sm-6 col-lg-2">{{ form.category.label_tag }}{{ form.category }}</div>
+      <div class="col-sm-6 col-lg-2">{{ form.order.label_tag }}{{ form.order }}</div>
+      <div class="col-lg-1 d-grid"><button class="btn btn-green" type="submit" aria-label="Aplicar filtros"><i class="bi bi-funnel"></i></button></div>
+    </div>
+  </form>
+  <p class="text-muted mt-3">{{ total }} pueblo{{ total|pluralize }} encontrado{{ total|pluralize }}{% if request.GET %} · <a href="{% url 'communities:list' %}">Limpiar filtros</a>{% endif %}</p>
+  <div class="row g-4">
+    {% for c in page %}
+    <div class="col-sm-6 col-lg-4 col-xxl-3">{% include "partials/community_card.html" %}</div>
+    {% empty %}
+    <div class="col-12"><div class="empty-state"><i class="bi bi-search"></i><p>No hay pueblos publicados con esos criterios.</p></div></div>
+    {% endfor %}
+  </div>
+  {% include "partials/pagination.html" %}
+</div>
+{% endblock %}

@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+{% block content %}
+<div class="container-xxl py-4">
+  <div class="panel-head">
+    <h1 class="h3 mb-0"><i class="bi bi-speedometer2"></i> {% block panel_title %}Panel administrativo{% endblock %}</h1>
+    {% with un=request.resolver_match.url_name %}
+    <nav class="panel-nav" aria-label="Secciones del panel">
+      <a class="{% if un == 'admin_dashboard' %}active{% endif %}" href="{% url 'core:admin_dashboard' %}">Resumen</a>
+      <a class="{% if un == 'admin_moderation' %}active{% endif %}" href="{% url 'core:admin_moderation' %}">Moderación</a>
+      <a class="{% if un == 'admin_requests' %}active{% endif %}" href="{% url 'core:admin_requests' %}">Solicitudes</a>
+      <a class="{% if un == 'admin_featured' %}active{% endif %}" href="{% url 'core:admin_featured' %}">Carrusel</a>
+      <a class="{% if un == 'admin_donations' %}active{% endif %}" href="{% url 'core:admin_donations' %}">Donaciones</a>
+      <a class="{% if un == 'admin_reviews' %}active{% endif %}" href="{% url 'core:admin_reviews' %}">Reseñas</a>
+      <a class="{% if un == 'admin_users' %}active{% endif %}" href="{% url 'core:admin_users' %}">Usuarios y roles</a>
+      <a class="{% if un == 'admin_audit' %}active{% endif %}" href="{% url 'core:admin_audit' %}">Auditoría</a>
+      <a href="{% url 'admin:index' %}">Datos (admin Django)</a>
+    </nav>
+    {% endwith %}
+  </div>
+  {% block panel %}{% endblock %}
+</div>
+{% endblock %}

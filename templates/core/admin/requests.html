@@ -1,0 +1,19 @@
+{% extends "core/admin/_layout.html" %}
+{% block title %}Solicitudes{% endblock %}{% block panel_title %}Solicitudes de registro de comunidades{% endblock %}
+{% block panel %}
+{% for r in items %}
+<div class="mod-item">
+  <div><span class="kicker">{{ r.province.name }}{% if r.canton %} · {{ r.canton }}{% endif %} · {{ r.created_at|date:"d/m/Y" }}</span>
+    <h2 class="h6 mb-1">{{ r.community_name }} <span class="badge text-bg-{% if r.status == 'approved' %}success{% elif r.status == 'rejected' %}danger{% else %}warning{% endif %}">{{ r.get_status_display }}</span></h2>
+    <p class="small mb-1">Solicitante: {{ r.user }} ({{ r.user.email }}) · {{ r.role_in_community }}</p>
+    <p class="small mb-0">{{ r.message|linebreaksbr }}</p>
+    {% if r.community %}<a class="small" href="{% url 'core:manage_community' r.community.slug %}">Gestionar comunidad creada →</a>{% endif %}</div>
+  {% if r.status == 'pending' %}
+  <form method="post" class="mod-actions">{% csrf_token %}
+    <input class="form-control form-control-sm" name="note" placeholder="Motivo del rechazo (opcional)">
+    <button class="btn btn-sm btn-green" formaction="{% url 'core:request_action' r.pk 'aprobar' %}">Aprobar y crear comunidad</button>
+    <button class="btn btn-sm btn-outline-danger" formaction="{% url 'core:request_action' r.pk 'rechazar' %}">Rechazar</button>
+  </form>{% endif %}
+</div>
+{% empty %}<div class="empty-state"><i class="bi bi-inbox"></i><p>No hay solicitudes.</p></div>{% endfor %}
+{% endblock %}

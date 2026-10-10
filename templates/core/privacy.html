@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}Política de privacidad{% endblock %}
+{% block content %}
+<div class="container-xxl py-4 prose-page">
+  <h1>Política de privacidad</h1>
+  <p>Ecuador Cultural recopila únicamente los datos necesarios para operar la plataforma:</p>
+  <ul>
+    <li><strong>Cuenta:</strong> nombre de usuario, nombres, correo y contraseña (almacenada cifrada por Django). Teléfono, biografía y foto son opcionales.</li>
+    <li><strong>Reseñas, favoritos y recorridos:</strong> se asocian a tu cuenta; las reseñas son públicas con tu nombre de pila o usuario.</li>
+    <li><strong>Aportes:</strong> monto, método, referencia y comprobante. El nombre del donante solo se muestra si lo autorizas. Nunca almacenamos números de tarjeta ni códigos de seguridad.</li>
+    <li><strong>Ubicación GPS:</strong> solo se solicita con tu permiso explícito para centrar el mapa en tu dispositivo; no se envía ni se guarda.</li>
+    <li><strong>Asistente turístico:</strong> las conversaciones de visitantes no se guardan. Los usuarios registrados pueden activar el historial y eliminarlo cuando quieran.</li>
+  </ul>
+  <p>Puedes solicitar la corrección o eliminación de tus datos al administrador de la plataforma{% if SITE_CONTACT_EMAIL %} escribiendo a <a href="mailto:{{ SITE_CONTACT_EMAIL }}">{{ SITE_CONTACT_EMAIL }}</a>{% endif %}. Este texto debe ajustarse a la Ley Orgánica de Protección de Datos Personales del Ecuador antes de un despliegue público.</p>
+</div>
+{% endblock %}

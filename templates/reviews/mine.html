@@ -1,0 +1,18 @@
+{% extends "base.html" %}{% load ec_tags %}
+{% block title %}Mis reseñas{% endblock %}
+{% block content %}
+<div class="container-xxl py-4">
+  <h1 class="h3"><i class="bi bi-chat-square-text"></i> Mis reseñas</h1>
+  <div class="row g-3">
+    {% for r in reviews %}
+    <div class="col-md-6"><article class="review-card h-100">
+      <div class="d-flex justify-content-between"><a href="{{ r.get_absolute_url }}"><strong>{{ r.target }}</strong></a>{% status_badge r %}</div>
+      {% stars r.rating %}<p class="small mt-2">{{ r.comment }}</p>
+      {% if r.moderation_note %}<p class="small text-danger">Moderación: {{ r.moderation_note }}</p>{% endif %}
+      <div class="d-flex gap-2">{% if r.status != 'hidden' %}<a class="btn btn-sm btn-outline-green" href="{% url 'reviews:edit' r.pk %}">Editar</a>{% endif %}
+        <form method="post" action="{% url 'reviews:delete' r.pk %}" onsubmit="return confirm('¿Eliminar reseña?')">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Eliminar</button></form></div>
+    </article></div>
+    {% empty %}<p class="text-muted">Aún no has publicado reseñas.</p>{% endfor %}
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,27 @@
+{% extends "base.html" %}{% load static %}
+{% block title %}Mapa interactivo{% endblock %}
+{% block extra_head %}<link rel="stylesheet" href="{% static 'vendor/leaflet/leaflet.css' %}">{% endblock %}
+{% block body_class %}page-map{% endblock %}
+{% block content %}
+<div class="map-layout" id="mapApp" data-source="{% url 'tourism:map_data' %}">
+  <aside class="map-sidebar">
+    <h1 class="h4"><i class="bi bi-map"></i> Mapa interactivo</h1>
+    <p class="small text-muted">Pueblos, atractivos y servicios con coordenadas registradas. Los marcadores con borde punteado tienen ubicación aproximada pendiente de validación.</p>
+    <label class="form-label" for="mapSearch">Buscar destino</label>
+    <input class="form-control mb-3" id="mapSearch" type="search" placeholder="Ej.: Otavalo, catedral…">
+    <fieldset>
+      <legend class="form-label fs-6">Categorías</legend>
+      <div class="map-filters">
+        {% for key, label, icon in kinds %}
+        <label class="map-filter"><input type="checkbox" class="form-check-input" value="{{ key }}" checked> <i class="bi {{ icon }}"></i> {{ label }} <span class="count" data-count="{{ key }}">0</span></label>
+        {% endfor %}
+      </div>
+    </fieldset>
+    <button class="btn btn-outline-green w-100 mt-3" type="button" id="locateMe"><i class="bi bi-crosshair"></i> Usar mi ubicación</button>
+    <p class="small text-muted mt-2 mb-0" id="locateMsg">Solo se usará en tu dispositivo para centrar el mapa; no se guarda.</p>
+    <div class="map-results mt-3" id="mapResults" aria-live="polite"></div>
+  </aside>
+  <div class="map-canvas" id="bigMap" role="region" aria-label="Mapa de destinos"></div>
+</div>
+{% endblock %}
+{% block extra_js %}<script src="{% static 'vendor/leaflet/leaflet.js' %}"></script>{% endblock %}

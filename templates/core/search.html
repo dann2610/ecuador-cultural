@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}Buscar{% endblock %}
+{% block content %}
+<div class="container-xxl py-4">
+  <h1 class="h3">Resultados para «{{ q }}»</h1>
+  <form class="d-flex gap-2 my-3" style="max-width: 640px" role="search"><input class="form-control" name="q" value="{{ q }}" aria-label="Buscar" minlength="2"><button class="btn btn-green"><i class="bi bi-search"></i></button></form>
+  {% if q|length < 2 %}<p class="text-muted">Escribe al menos 2 caracteres.</p>
+  {% elif not total %}<div class="empty-state"><i class="bi bi-search"></i><p>No encontramos coincidencias. Prueba con otro término o pregunta al asistente turístico.</p></div>
+  {% else %}
+  <div class="row g-4">
+  {% for group, items in results.items %}{% if items %}
+    <div class="col-md-6"><div class="side-card h-100"><h2 class="h5">{{ group }} <span class="badge text-bg-light">{{ items|length }}</span></h2>
+      {% for name, sub, url in items %}<a class="list-row" href="{{ url }}"><strong>{{ name }}</strong><span>{{ sub }}</span></a>{% endfor %}
+    </div></div>
+  {% endif %}{% endfor %}
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

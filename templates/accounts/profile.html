@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}Mi perfil{% endblock %}
+{% block content %}
+<div class="container-xxl py-4">
+  <div class="row g-4">
+    <div class="col-lg-8">
+      <h1 class="h3">Mi perfil <span class="badge text-bg-light fs-6">{{ user.get_role_display }}</span></h1>
+      <form method="post" enctype="multipart/form-data" class="card card-body shadow-sm">{% csrf_token %}
+        {% include "partials/form_fields.html" %}
+        <button class="btn btn-green mt-3">Guardar cambios</button>
+      </form>
+    </div>
+    <div class="col-lg-4">
+      <div class="side-card">
+        <h2 class="h6">Accesos rápidos</h2>
+        <div class="d-grid gap-2">
+          <a class="btn btn-outline-green" href="{% url 'accounts:favorites' %}"><i class="bi bi-heart"></i> Favoritos</a>
+          <a class="btn btn-outline-green" href="{% url 'itineraries:trips' %}"><i class="bi bi-map"></i> Mis recorridos</a>
+          <a class="btn btn-outline-green" href="{% url 'reviews:mine' %}"><i class="bi bi-chat-square-text"></i> Mis reseñas</a>
+          <a class="btn btn-outline-green" href="{% url 'donations:mine' %}"><i class="bi bi-cash-coin"></i> Mis aportes</a>
+          <a class="btn btn-outline-green" href="{% url 'communities:request' %}"><i class="bi bi-house-add"></i> Registrar mi comunidad</a>
+          <a class="btn btn-outline-secondary" href="{% url 'accounts:password_reset' %}"><i class="bi bi-key"></i> Cambiar contraseña</a>
+        </div>
+      </div>
+      <form class="side-card" method="post" action="{% url 'chatbot:delete_history' %}">{% csrf_token %}
+        <h2 class="h6">Privacidad del asistente</h2>
+        <p class="small text-muted">Solo guardamos tu historial si activas «Guardar mi historial» en el asistente.</p>
+        <button class="btn btn-sm btn-outline-danger">Eliminar historial del asistente</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

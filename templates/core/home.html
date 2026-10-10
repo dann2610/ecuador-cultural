@@ -1,0 +1,171 @@
+{% extends "base.html" %}{% load ec_tags humanize %}
+{% block title %}Inicio{% endblock %}
+{% block content %}
+
+{# 1. Carrusel principal: cuatro destinos destacados, cambio cada 5 s #}
+<section class="hero" aria-label="Destinos destacados">
+  <div id="heroCarousel" class="carousel slide carousel-fade" data-interval="5000">
+    <div class="carousel-indicators">
+      {% for s in slides %}
+      <button type="button" data-bs-target="#heroCarousel" data-bs-slide-to="{{ forloop.counter0 }}" {% if forloop.first %}class="active" aria-current="true"{% endif %} aria-label="Diapositiva {{ forloop.counter }}: {{ s.community.name }}"></button>
+      {% endfor %}
+    </div>
+    <div class="carousel-inner">
+      {% for s in slides %}
+      <div class="carousel-item{% if forloop.first %} active{% endif %}">
+        {% if s.photo %}
+        <img src="{{ s.photo.image.url }}" class="hero__img" alt="{{ s.photo.alt_text }}" {% if not forloop.first %}loading="lazy"{% endif %}>
+        {% else %}
+        <div class="hero__img photo-placeholder hero-placeholder" role="img" aria-label="Fotografía pendiente"><i class="bi bi-camera"></i><span>Fotografía pendiente de autorización</span></div>
+        {% endif %}
+        <div class="hero__overlay"></div>
+        <div class="hero__caption container-xxl">
+          <span class="hero__kicker"><i class="bi bi-geo-alt-fill"></i> {{ s.community.province.name }} · {{ s.community.province.get_region_display }}</span>
+          <h1 class="hero__title">{{ s.community.name }}</h1>
+          <p class="hero__text">{{ s.community.short_description|truncatechars:180 }}</p>
+          <div class="d-flex flex-wrap gap-2 align-items-center">
+            <a class="btn btn-earth btn-lg" href="{{ s.community.get_absolute_url }}">Descubrir destino <i class="bi bi-arrow-right"></i></a>
+            {% if s.is_demo %}<span class="badge badge-demo-hero"><i class="bi bi-info-circle"></i> Destino de demostración</span>{% endif %}
+          </div>
+          {% if s.photo %}<p class="hero__credit">Foto: {{ s.photo.author }} · {{ s.photo.license }}{% if s.photo.is_placeholder %} · imagen de demostración{% endif %}</p>{% endif %}
+        </div>
+      </div>
+      {% empty %}
+      <div class="carousel-item active">
+        <div class="hero__img photo-placeholder hero-placeholder"><i class="bi bi-image"></i><span>Aún no hay destinos publicados</span></div>
+        <div class="hero__caption container-xxl"><h1 class="hero__title">{{ SITE_NAME }}</h1><p class="hero__text">{{ SITE_SLOGAN }}</p></div>
+      </div>
+      {% endfor %}
+    </div>
+    {% if slides|length > 1 %}
+    <button class="carousel-control-prev" type="button" data-bs-target="#heroCarousel" data-bs-slide="prev"><span class="carousel-control-prev-icon" aria-hidden="true"></span><span class="visually-hidden">Anterior</span></button>
+    <button class="carousel-control-next" type="button" data-bs-target="#heroCarousel" data-bs-slide="next"><span class="carousel-control-next-icon" aria-hidden="true"></span><span class="visually-hidden">Siguiente</span></button>
+    <button class="hero__pause" type="button" data-carousel-toggle aria-pressed="false" aria-label="Pausar carrusel"><i class="bi bi-pause-fill"></i></button>
+    {% endif %}
+  </div>
+</section>
+
+{# 2. Buscador #}
+<section class="container-xxl search-band">
+  <form class="search-panel shadow" action="{% url 'communities:list' %}" role="search">
+    <div class="row g-2 align-items-end">
+      <div class="col-lg-5"><label class="form-label" for="hq">¿Qué quieres descubrir?</label>
+        <input class="form-control form-control-lg" id="hq" name="q" placeholder="Pueblo, comunidad, parroquia…"></div>
+      <div class="col-sm-6 col-lg-3"><label class="form-label" for="hp">Provincia</label>
+        <select class="form-select form-select-lg" id="hp" name="province"><option value="">Todas</option>{% for p in provinces %}<option value="{{ p.slug }}">{{ p.name }}</option>{% endfor %}</select></div>
+      <div class="col-sm-6 col-lg-2"><label class="form-label" for="hc">Experiencia</label>
+        <select class="form-select form-select-lg" id="hc" name="category"><option value="">Todas</option>{% for c in categories %}<option value="{{ c.slug }}">{{ c.name }}</option>{% endfor %}</select></div>
+      <div class="col-lg-2"><button class="btn btn-green btn-lg w-100" type="submit"><i class="bi bi-search"></i> Buscar</button></div>
+    </div>
+  </form>
+</section>
+
+{# 3. Categorías #}
+<section class="container-xxl mt-5" aria-labelledby="cat-title">
+  <h2 id="cat-title" class="section-title">Explora por experiencia</h2>
+  <div class="category-grid">
+    {% for cat in categories %}
+    <a class="category-tile" href="{% url 'communities:list' %}?category={{ cat.slug }}"><i class="bi {{ cat.icon }}"></i><span>{{ cat.name }}</span></a>
+    {% endfor %}
+  </div>
+</section>
+
+{# 4. Pueblos destacados (tarjetas con fotografías rotativas cada 3 s) #}
+<section class="container-xxl mt-5" aria-labelledby="pd-title">
+  <div class="section-head"><h2 id="pd-title" class="section-title">Pueblos para descubrir</h2><a href="{% url 'communities:list' %}">Ver todos <i class="bi bi-arrow-right"></i></a></div>
+  <div class="row g-4">
+    {% for c in communities %}<div class="col-sm-6 col-lg-3">{% include "partials/community_card.html" %}</div>
+    {% empty %}<p class="text-muted">Pronto publicaremos los primeros pueblos.</p>{% endfor %}
+  </div>
+</section>
+
+{# 5. Por provincia #}
+{% if provinces %}
+<section class="band-earth mt-5 py-5" aria-labelledby="prov-title">
+  <div class="container-xxl">
+    <h2 id="prov-title" class="section-title text-white">Destinos por provincia</h2>
+    <div class="province-list">
+      {% for p in provinces %}<a class="province-pill" href="{% url 'communities:list' %}?province={{ p.slug }}">{{ p.name }} <span>{{ p.num }}</span></a>{% endfor %}
+    </div>
+  </div>
+</section>
+{% endif %}
+
+{# 6. Itinerarios #}
+<section class="container-xxl mt-5" aria-labelledby="it-title">
+  <div class="section-head"><h2 id="it-title" class="section-title">Itinerarios recomendados</h2><a href="{% url 'itineraries:list' %}">Ver itinerarios <i class="bi bi-arrow-right"></i></a></div>
+  <div class="row g-4">
+    {% for it in itineraries %}<div class="col-md-4">{% include "itineraries/_card.html" %}</div>
+    {% empty %}<p class="text-muted">Aún no hay itinerarios publicados.</p>{% endfor %}
+  </div>
+</section>
+
+{# 7-9. Gastronomía, artesanías, tradiciones #}
+<section class="container-xxl mt-5">
+  <div class="row g-4">
+    <div class="col-lg-4">
+      <div class="feature-col"><h2 class="section-title h4"><i class="bi bi-egg-fried"></i> Gastronomía tradicional</h2>
+        {% for d in dishes %}<a class="list-row" href="{{ d.get_absolute_url }}"><strong>{{ d.name }}</strong><span>{{ d.community.name }}</span></a>{% empty %}<p class="text-muted small">Sin platos publicados.</p>{% endfor %}
+        <a class="small" href="{% url 'culture:gastronomy' %}">Ver gastronomía →</a></div>
+    </div>
+    <div class="col-lg-4">
+      <div class="feature-col"><h2 class="section-title h4"><i class="bi bi-palette"></i> Artesanías</h2>
+        {% for d in crafts %}<a class="list-row" href="{{ d.get_absolute_url }}"><strong>{{ d.name }}</strong><span>{{ d.get_kind_display }} · {{ d.community.name }}</span></a>{% empty %}<p class="text-muted small">Sin artesanías publicadas.</p>{% endfor %}
+        <a class="small" href="{% url 'culture:crafts' %}">Ver artesanías →</a></div>
+    </div>
+    <div class="col-lg-4">
+      <div class="feature-col"><h2 class="section-title h4"><i class="bi bi-music-note-beamed"></i> Tradiciones y festividades</h2>
+        {% for d in festivities %}<a class="list-row" href="{{ d.get_absolute_url }}"><strong>{{ d.name }}</strong><span>{{ d.period|default:"Fecha por confirmar" }} · {{ d.community.name }}</span></a>{% empty %}<p class="text-muted small">Sin festividades publicadas.</p>{% endfor %}
+        <a class="small" href="{% url 'culture:traditions' %}">Ver tradiciones →</a></div>
+    </div>
+  </div>
+</section>
+
+{# 10-12. Patrimonio, cementerios, naturaleza #}
+<section class="container-xxl mt-5" aria-labelledby="pat-title">
+  <h2 id="pat-title" class="section-title"><i class="bi bi-bank2"></i> Iglesias y patrimonio</h2>
+  <div class="row g-3">{% for p in churches %}<div class="col-6 col-lg-3">{% include "partials/place_card.html" %}</div>{% empty %}<p class="text-muted">Sin lugares patrimoniales publicados.</p>{% endfor %}</div>
+</section>
+<section class="container-xxl mt-5" aria-labelledby="cem-title">
+  <h2 id="cem-title" class="section-title"><i class="bi bi-flower1"></i> Cementerios patrimoniales</h2>
+  <p class="text-muted small">Visítalos con respeto: son espacios de memoria para las familias y comunidades.</p>
+  <div class="row g-3">{% for p in cemeteries %}<div class="col-6 col-lg-3">{% include "partials/place_card.html" %}</div>{% empty %}<p class="text-muted">Sin cementerios patrimoniales publicados.</p>{% endfor %}</div>
+</section>
+<section class="container-xxl mt-5" aria-labelledby="nat-title">
+  <h2 id="nat-title" class="section-title"><i class="bi bi-tree"></i> Naturaleza y aventura</h2>
+  <div class="row g-3">{% for p in nature %}<div class="col-6 col-lg-3">{% include "partials/place_card.html" %}</div>{% empty %}<p class="text-muted">Sin espacios naturales publicados.</p>{% endfor %}</div>
+</section>
+
+{# 13. Proyectos #}
+<section class="band-green mt-5 py-5" aria-labelledby="proj-title">
+  <div class="container-xxl">
+    <div class="section-head"><h2 id="proj-title" class="section-title text-white">Proyectos comunitarios que necesitan apoyo</h2><a class="text-white" href="{% url 'donations:project_list' %}">Ver proyectos <i class="bi bi-arrow-right"></i></a></div>
+    <div class="row g-4">
+      {% for project in projects %}<div class="col-md-4">{% include "donations/_card.html" %}</div>
+      {% empty %}<p class="text-white-50">No hay proyectos recaudando apoyo en este momento.</p>{% endfor %}
+    </div>
+  </div>
+</section>
+
+{# 14. Reseñas #}
+<section class="container-xxl mt-5" aria-labelledby="rev-title">
+  <h2 id="rev-title" class="section-title">Reseñas recientes</h2>
+  <div class="row g-3">
+    {% for r in reviews %}
+    <div class="col-md-6 col-lg-3"><article class="review-card h-100">
+      {% stars r.rating %}<p class="small mt-2 mb-1">{{ r.comment|truncatechars:140 }}</p>
+      <p class="small text-muted mb-0">{{ r.user.first_name|default:r.user.username }} sobre <a href="{{ r.get_absolute_url }}">{{ r.target }}</a></p>
+    </article></div>
+    {% empty %}<p class="text-muted">Todavía no hay reseñas. Las opiniones que veas aquí siempre son de visitantes registrados.</p>{% endfor %}
+  </div>
+</section>
+
+{# 15. Invitación a comunidades #}
+<section class="container-xxl mt-5">
+  <div class="invite-card">
+    <div><h2 class="h3">¿Tu comunidad quiere ser visible?</h2>
+      <p class="mb-0">Registra tu pueblo, comparte su historia con fuentes, sube fotografías autorizadas y publica proyectos para recibir apoyo transparente.</p></div>
+    <a class="btn btn-earth btn-lg" href="{% url 'communities:request' %}"><i class="bi bi-house-add"></i> Registrar mi comunidad</a>
+  </div>
+</section>
+{% endblock %}

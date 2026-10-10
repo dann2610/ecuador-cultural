@@ -1,0 +1,17 @@
+{% load ec_tags %}
+<article class="culture-item h-100">
+  {% if item.image %}<img src="{{ item.image.url }}" alt="{{ item.name }}" loading="lazy" class="culture-item__img">
+  {% else %}<div class="photo-placeholder sm"><i class="bi bi-image"></i><span>Fotografía pendiente</span></div>{% endif %}
+  <div class="culture-item__body">
+    <h3 class="h6 mb-1">{{ item.name }} {% demo_badge item %}</h3>
+    <p class="small text-muted mb-2">{% if item.get_kind_display %}{{ item.get_kind_display }} · {% endif %}<a href="{{ item.community.get_absolute_url }}">{{ item.community.name }}</a></p>
+    <p class="small mb-2">{{ item.description|truncatechars:220 }}</p>
+    {% if item.ingredients %}<p class="small mb-1"><strong>Ingredientes:</strong> {{ item.ingredients }}</p>{% endif %}
+    {% if item.materials %}<p class="small mb-1"><strong>Materiales:</strong> {{ item.materials }}</p>{% endif %}
+    {% if item.technique %}<p class="small mb-1"><strong>Técnica:</strong> {{ item.technique }}</p>{% endif %}
+    {% if item.cultural_meaning %}<p class="small mb-1"><strong>Significado:</strong> {{ item.cultural_meaning }}</p>{% endif %}
+    {% if item.cultural_context %}<p class="small mb-1"><strong>Contexto cultural:</strong> {{ item.cultural_context }}</p>{% endif %}
+    {% if item.source %}<p class="source mb-0">Fuente: {{ item.source|urlize }}</p>{% endif %}
+    {% if item.image_credit %}<p class="source mb-0">Foto: {{ item.image_credit }}</p>{% endif %}
+  </div>
+</article>

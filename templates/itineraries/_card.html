@@ -1,0 +1,18 @@
+{% load ec_tags %}
+<article class="route-card h-100">
+  <a href="{{ it.get_absolute_url }}" class="route-card__media">
+    {% if it.cover %}<img src="{{ it.cover.url }}" alt="Portada de {{ it.name }}" loading="lazy">
+    {% else %}<div class="photo-placeholder route"><i class="bi bi-signpost-split"></i><span>{{ it.get_kind_display }}</span></div>{% endif %}
+  </a>
+  <div class="route-card__body">
+    <span class="kicker">{{ it.get_kind_display }}</span>
+    <h3 class="h5"><a href="{{ it.get_absolute_url }}">{{ it.name }}</a></h3>
+    <ul class="route-meta">
+      <li><i class="bi bi-clock"></i> {{ it.duration_days }} día{{ it.duration_days|pluralize }}</li>
+      {% if it.province %}<li><i class="bi bi-geo"></i> {{ it.province.name }}</li>{% endif %}
+      {% if it.num_stops %}<li><i class="bi bi-pin-map"></i> {{ it.num_stops }} paradas</li>{% endif %}
+      <li><i class="bi bi-wallet2"></i> {% if it.budget_estimate %}desde ${{ it.budget_estimate|floatformat:0 }} (orientativo){% else %}Presupuesto por confirmar{% endif %}</li>
+    </ul>
+    {% demo_badge it %}
+  </div>
+</article>

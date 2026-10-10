@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block title %}Favoritos{% endblock %}
+{% block content %}
+<div class="container-xxl py-4">
+  <h1 class="h3"><i class="bi bi-heart"></i> Mis favoritos</h1>
+  <div class="row g-4">
+    <div class="col-lg-7">
+      <h2 class="h5">Pueblos y lugares</h2>
+      <div class="list-group shadow-sm">
+        {% for f in favorites %}{% with t=f.community|default:f.place %}
+        <a class="list-group-item list-group-item-action" href="{{ t.get_absolute_url }}"><i class="bi {% if f.community %}bi-people{% else %}bi-geo-alt{% endif %} me-2"></i>{{ t.name }}<small class="text-muted"> · {% if f.community %}{{ f.community.province.name }}{% else %}{{ f.place.community.name }}{% endif %}</small></a>
+        {% endwith %}{% empty %}<div class="list-group-item text-muted">Aún no tienes favoritos. Usa el ícono <i class="bi bi-heart"></i> en las tarjetas.</div>{% endfor %}
+      </div>
+    </div>
+    <div class="col-lg-5">
+      <h2 class="h5">Itinerarios guardados</h2>
+      <div class="list-group shadow-sm">
+        {% for f in fav_itineraries %}<a class="list-group-item list-group-item-action" href="{{ f.itinerary.get_absolute_url }}"><i class="bi bi-signpost-split me-2"></i>{{ f.itinerary.name }}</a>
+        {% empty %}<div class="list-group-item text-muted">Sin itinerarios guardados.</div>{% endfor %}
+      </div>
+    </div>
+  </div>
+</div>
+{% endblock %}

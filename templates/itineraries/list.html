@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block title %}Itinerarios{% endblock %}
+{% block content %}
+<section class="page-hero"><div class="container-xxl">
+  <h1><i class="bi bi-signpost-split"></i> Itinerarios turísticos</h1>
+  <p>Rutas culturales, gastronómicas, artesanales, patrimoniales y de naturaleza. Guarda tus favoritas o crea tu propio recorrido.</p>
+  <div class="d-flex flex-wrap gap-2">
+    <a class="btn btn-earth" href="{% url 'itineraries:trips' %}"><i class="bi bi-plus-circle"></i> Crear mi recorrido</a>
+    {% if user.is_platform_admin or user.is_representative %}<a class="btn btn-outline-light" href="{% url 'itineraries:create' %}"><i class="bi bi-pencil-square"></i> Proponer itinerario público</a>{% endif %}
+  </div>
+</div></section>
+<div class="container-xxl">
+  <form class="filter-bar card card-body shadow-sm" method="get">
+    <div class="row g-2 align-items-end">
+      <div class="col-lg-3">{{ form.q.label_tag }}{{ form.q }}</div>
+      <div class="col-sm-6 col-lg-2">{{ form.province.label_tag }}{{ form.province }}</div>
+      <div class="col-sm-6 col-lg-2">{{ form.kind.label_tag }}{{ form.kind }}</div>
+      <div class="col-sm-6 col-lg-2">{{ form.duration.label_tag }}{{ form.duration }}</div>
+      <div class="col-sm-6 col-lg-2">{{ form.max_budget.label_tag }}{{ form.max_budget }}</div>
+      <div class="col-lg-1 d-grid"><button class="btn btn-green" aria-label="Filtrar"><i class="bi bi-funnel"></i></button></div>
+    </div>
+  </form>
+  <div class="row g-4 mt-1">
+    {% for it in page %}<div class="col-md-6 col-lg-4">{% include "itineraries/_card.html" %}</div>
+    {% empty %}<div class="col-12"><div class="empty-state"><i class="bi bi-signpost"></i><p>No hay itinerarios con esos criterios.</p></div></div>{% endfor %}
+  </div>
+  {% include "partials/pagination.html" %}
+</div>
+{% endblock %}

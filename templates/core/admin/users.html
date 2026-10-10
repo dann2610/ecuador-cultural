@@ -1,0 +1,16 @@
+{% extends "core/admin/_layout.html" %}
+{% block title %}Usuarios{% endblock %}{% block panel_title %}Usuarios y roles{% endblock %}
+{% block panel %}
+<form class="d-flex gap-2 mb-3" style="max-width:480px"><input class="form-control" name="q" value="{{ q }}" placeholder="Buscar usuario o correo"><button class="btn btn-green"><i class="bi bi-search"></i></button></form>
+<div class="table-responsive card shadow-sm"><table class="table align-middle mb-0">
+  <thead><tr><th>Usuario</th><th>Correo</th><th>Comunidades</th><th>Rol y estado</th></tr></thead>
+  <tbody>{% for u in page %}
+  <tr><td>{{ u.username }}<br><small class="text-muted">{{ u.get_full_name }}</small></td><td>{{ u.email }}</td><td>{{ u.n_comm }}</td>
+    <td><form method="post" action="{% url 'core:user_role' u.pk %}" class="d-flex gap-2 align-items-center">{% csrf_token %}<input type="hidden" name="next" value="{{ request.get_full_path }}">
+      <select class="form-select form-select-sm" name="role" aria-label="Rol">{% for k, l in roles %}<option value="{{ k }}" {% if u.role == k %}selected{% endif %}>{{ l }}</option>{% endfor %}</select>
+      <label class="small text-nowrap"><input type="checkbox" class="form-check-input" name="is_active" {% if u.is_active %}checked{% endif %}> Activo</label>
+      <button class="btn btn-sm btn-outline-green">Guardar</button></form></td></tr>
+  {% endfor %}</tbody></table></div>
+{% include "partials/pagination.html" %}
+<p class="small text-muted mt-2">Para asignar comunidades a un representante, entra a «Gestionar» la comunidad.</p>
+{% endblock %}

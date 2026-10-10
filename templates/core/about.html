@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+{% block title %}Acerca del proyecto{% endblock %}
+{% block content %}
+<div class="container-xxl py-4 prose-page">
+  <h1>Acerca de Ecuador Cultural</h1>
+  <p class="lead">{{ SITE_SLOGAN }}</p>
+  <p>Ecuador Cultural es una plataforma web para promocionar pueblos y comunidades con riqueza histórica, cultural, gastronómica, artesanal y natural que tienen poca visibilidad digital. Las comunidades administran su información, el administrador revisa su calidad y los visitantes descubren, planifican y apoyan.</p>
+  <div class="row g-3 my-3">
+    <div class="col-4"><div class="kpi"><span class="kpi__num">{{ stats.communities }}</span><span>pueblos publicados</span></div></div>
+    <div class="col-4"><div class="kpi"><span class="kpi__num">{{ stats.places }}</span><span>lugares</span></div></div>
+    <div class="col-4"><div class="kpi"><span class="kpi__num">{{ stats.itineraries }}</span><span>itinerarios</span></div></div>
+  </div>
+  <p>Tecnologías: Python, Django, PostgreSQL, Bootstrap 5, Leaflet y OpenStreetMap.</p>
+</div>
+{% endblock %}

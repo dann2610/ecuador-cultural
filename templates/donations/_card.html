@@ -1,0 +1,16 @@
+{% load ec_tags humanize %}
+<article class="project-card h-100">
+  <a href="{{ project.get_absolute_url }}" class="project-card__media">
+    {% if project.image %}<img src="{{ project.image.url }}" alt="{{ project.name }}" loading="lazy">
+    {% else %}<div class="photo-placeholder project"><i class="bi bi-heart"></i><span>Proyecto comunitario</span></div>{% endif %}
+  </a>
+  <div class="project-card__body">
+    <span class="kicker">{{ project.community.name }} · {{ project.get_phase_display }}</span>
+    <h3 class="h5"><a href="{{ project.get_absolute_url }}">{{ project.name }}</a></h3>
+    <div class="progress" role="progressbar" aria-label="Avance de la recaudación" aria-valuenow="{{ project.progress_percent }}" aria-valuemin="0" aria-valuemax="100">
+      <div class="progress-bar" style="width: {{ project.progress_percent }}%"></div>
+    </div>
+    <p class="small mt-2 mb-2"><strong>${{ project.confirmed_amount|floatformat:2|intcomma }}</strong> confirmados de ${{ project.goal_amount|floatformat:0|intcomma }}</p>
+    {% demo_badge project %}
+  </div>
+</article>

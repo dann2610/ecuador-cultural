@@ -1,0 +1,75 @@
+{% extends "base.html" %}{% load ec_tags %}
+{% block title %}Gestionar {{ c.name }}{% endblock %}
+{% block content %}
+<div class="container-xxl py-4">
+  <a class="small" href="{% if user.is_platform_admin %}{% url 'core:admin_dashboard' %}{% else %}{% url 'core:rep_dashboard' %}{% endif %}"><i class="bi bi-arrow-left"></i> Volver al panel</a>
+  <div class="panel-head mt-2">
+    <div><h1 class="h3 mb-1">{{ c.name }} {% status_badge c %} {% demo_badge c %}</h1><p class="text-muted mb-0">{{ c.province.name }}{% if c.canton %} · {{ c.canton.name }}{% endif %}{% if c.review_notes %} · <span class="text-danger">Observación: {{ c.review_notes }}</span>{% endif %}</p></div>
+    <div class="d-flex flex-wrap gap-2">
+      <a class="btn btn-sm btn-green" href="{% url 'core:edit_community' c.slug %}"><i class="bi bi-pencil"></i> Editar información</a>
+      <a class="btn btn-sm btn-outline-green" href="{{ c.get_absolute_url }}"><i class="bi bi-eye"></i> Vista previa</a>
+      <form method="post" action="{% url 'core:community_status' c.slug %}" class="d-flex gap-2">{% csrf_token %}
+        {% if user.is_platform_admin and not c.is_published %}<button class="btn btn-sm btn-earth" name="action" value="publish">Publicar</button>{% endif %}
+        {% if c.status == 'draft' or c.status == 'rejected' %}{% if not user.is_platform_admin %}<button class="btn btn-sm btn-earth" name="action" value="submit">Enviar a revisión</button>{% endif %}{% endif %}
+      </form>
+    </div>
+  </div>
+
+  <section class="side-card" id="foto">
+    <div class="d-flex justify-content-between align-items-center mb-2"><h2 class="h5 mb-0">Fotografías <small class="text-muted fs-6">(máx. 3 destacadas para las tarjetas · 1 portada)</small></h2>
+      <a class="btn btn-sm btn-green" href="{% url 'core:item_create' c.slug 'foto' %}"><i class="bi bi-upload"></i> Subir fotografía</a></div>
+    <div class="manage-photos">
+      {% for ph in photos %}
+      <figure class="manage-photo">
+        <img src="{{ ph.card_url }}" alt="{{ ph.alt_text }}" loading="lazy">
+        <figcaption>
+          <strong>{{ ph.order }}. {{ ph.title }}</strong><br><small>{{ ph.author }} · {{ ph.license }}</small><br>
+          {% if ph.is_cover %}<span class="badge text-bg-success">Portada</span>{% endif %}{% if ph.is_featured %}<span class="badge text-bg-info">Destacada</span>{% endif %}{% if ph.is_placeholder %}<span class="badge badge-demo">Demostración</span>{% endif %}
+          <div class="btn-group btn-group-sm mt-1 flex-wrap">
+            <form method="post" action="{% url 'core:photo_move' c.slug ph.pk 'subir' %}">{% csrf_token %}<button class="btn btn-outline-secondary" aria-label="Mover antes" {% if forloop.first %}disabled{% endif %}><i class="bi bi-arrow-left"></i></button></form>
+            <form method="post" action="{% url 'core:photo_move' c.slug ph.pk 'bajar' %}">{% csrf_token %}<button class="btn btn-outline-secondary" aria-label="Mover después" {% if forloop.last %}disabled{% endif %}><i class="bi bi-arrow-right"></i></button></form>
+            <form method="post" action="{% url 'core:photo_flag' c.slug ph.pk 'destacada' %}">{% csrf_token %}<button class="btn btn-outline-info" title="Alternar destacada"><i class="bi bi-star"></i></button></form>
+            {% if not ph.is_cover %}<form method="post" action="{% url 'core:photo_flag' c.slug ph.pk 'portada' %}">{% csrf_token %}<button class="btn btn-outline-success" title="Usar como portada"><i class="bi bi-image"></i></button></form>{% endif %}
+            <a class="btn btn-outline-green" href="{% url 'core:item_edit' c.slug 'foto' ph.pk %}" title="Editar / reemplazar"><i class="bi bi-pencil"></i></a>
+            <form method="post" action="{% url 'core:item_delete' c.slug 'foto' ph.pk %}" onsubmit="return confirm('¿Eliminar fotografía?')">{% csrf_token %}<button class="btn btn-outline-danger" title="Eliminar"><i class="bi bi-trash"></i></button></form>
+          </div>
+        </figcaption>
+      </figure>
+      {% empty %}<p class="text-muted">Sin fotografías. Sube imágenes con licencia o permiso de uso.</p>{% endfor %}
+    </div>
+  </section>
+
+  {% for s in sections %}
+  <section class="side-card" id="{{ s.key }}">
+    <div class="d-flex justify-content-between align-items-center mb-2"><h2 class="h5 mb-0">{{ s.plural }}</h2>
+      <a class="btn btn-sm btn-outline-green" href="{% url 'core:item_create' c.slug s.key %}"><i class="bi bi-plus"></i> Agregar {{ s.singular }}</a></div>
+    {% if s.items %}
+    <div class="table-responsive"><table class="table table-sm align-middle mb-0"><tbody>
+      {% for item in s.items %}
+      <tr><td>{{ item }} {% demo_badge item %}</td><td>{% status_badge item %}</td><td class="small text-muted">{{ item.updated_at|date:"d/m/Y" }}</td>
+        <td class="text-end text-nowrap">
+          {% if s.key == 'proyecto' %}<a class="btn btn-sm btn-outline-secondary" href="{% url 'donations:add_update' item.slug %}">Avance</a> <a class="btn btn-sm btn-outline-secondary" href="{% url 'donations:project_donations' item.slug %}">Aportes</a>{% endif %}
+          <a class="btn btn-sm btn-outline-green" href="{% url 'core:item_edit' c.slug s.key item.pk %}">Editar</a>
+          <form class="d-inline" method="post" action="{% url 'core:item_delete' c.slug s.key item.pk %}" onsubmit="return confirm('¿Eliminar?')">{% csrf_token %}<button class="btn btn-sm btn-outline-danger">Eliminar</button></form></td></tr>
+      {% endfor %}
+    </tbody></table></div>
+    {% else %}<p class="small text-muted mb-0">Sin registros.</p>{% endif %}
+  </section>
+  {% endfor %}
+
+  <section class="side-card">
+    <div class="d-flex justify-content-between align-items-center mb-2"><h2 class="h5 mb-0">Itinerarios de la comunidad</h2><a class="btn btn-sm btn-outline-green" href="{% url 'itineraries:create' %}"><i class="bi bi-plus"></i> Proponer itinerario</a></div>
+    <ul class="list-unstyled mb-0">{% for it in itineraries %}<li class="d-flex justify-content-between border-bottom py-1"><a href="{% url 'itineraries:edit' it.slug %}">{{ it.name }}</a>{% status_badge it %}</li>{% empty %}<li class="small text-muted">Sin itinerarios.</li>{% endfor %}</ul>
+  </section>
+
+  {% if user.is_platform_admin %}
+  <section class="side-card">
+    <h2 class="h5">Representantes asignados</h2>
+    <ul class="list-unstyled">{% for a in assignments %}<li class="d-flex justify-content-between align-items-center border-bottom py-1"><span>{{ a.user }} · {{ a.user.email }} {% if not a.is_active %}<span class="badge text-bg-secondary">inactiva</span>{% endif %}</span>
+      <form method="post" action="{% url 'core:assign_representative' c.slug %}">{% csrf_token %}<input type="hidden" name="remove" value="{{ a.pk }}"><button class="btn btn-sm btn-outline-danger">Quitar</button></form></li>{% empty %}<li class="small text-muted">Sin representantes.</li>{% endfor %}</ul>
+    <form method="post" action="{% url 'core:assign_representative' c.slug %}" class="d-flex gap-2" style="max-width: 520px">{% csrf_token %}
+      <input class="form-control form-control-sm" name="user" placeholder="Usuario o correo" required><button class="btn btn-sm btn-green">Asignar</button></form>
+  </section>
+  {% endif %}
+</div>
+{% endblock %}

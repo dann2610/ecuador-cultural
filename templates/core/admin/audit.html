@@ -1,0 +1,9 @@
+{% extends "core/admin/_layout.html" %}
+{% block title %}Auditoría{% endblock %}{% block panel_title %}Historial de moderación y auditoría{% endblock %}
+{% block panel %}
+<div class="table-responsive card shadow-sm"><table class="table table-sm align-middle mb-0">
+  <thead><tr><th>Fecha</th><th>Usuario</th><th>Acción</th><th>Objeto</th><th>Detalle</th></tr></thead>
+  <tbody>{% for a in page %}<tr><td class="text-nowrap">{{ a.created_at|date:"d/m/Y H:i" }}</td><td>{{ a.actor|default:"—" }}</td><td><code>{{ a.action }}</code></td><td>{{ a.object_repr }}<br><small class="text-muted">{{ a.model_label }} #{{ a.object_id }}</small></td><td class="small">{{ a.detail|truncatechars:120 }}</td></tr>{% endfor %}</tbody>
+</table></div>
+{% include "partials/pagination.html" %}
+{% endblock %}

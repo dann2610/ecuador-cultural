@@ -1,0 +1,9 @@
+{% extends "accounts/_auth_layout.html" %}
+{% block title %}Crear cuenta{% endblock %}{% block auth_title %}Crear cuenta{% endblock %}
+{% block auth_body %}
+<form method="post" novalidate>{% csrf_token %}
+  {% include "partials/form_fields.html" %}
+  <button class="btn btn-green w-100 mt-3" type="submit">Registrarme</button>
+</form>
+<p class="small text-center mt-3 mb-0">¿Representas a una comunidad? Crea tu cuenta y luego <a href="{% url 'communities:request' %}">solicita el registro de tu comunidad</a>.</p>
+{% endblock %}

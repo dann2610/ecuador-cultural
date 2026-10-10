@@ -1,0 +1,14 @@
+{% extends "base.html" %}{% load ec_tags %}
+{% block title %}Aportes · {{ project.name }}{% endblock %}
+{% block content %}
+<div class="container-xxl py-4">
+  <a class="small" href="{{ project.get_absolute_url }}"><i class="bi bi-arrow-left"></i> {{ project.name }}</a>
+  <h1 class="h3 mt-2">Aportes registrados</h1>
+  <p>Total confirmado: <strong>${{ project.confirmed_amount|floatformat:2 }}</strong> de ${{ project.goal_amount|floatformat:2 }}. Los datos de contacto de los donantes no se muestran.</p>
+  <div class="table-responsive card shadow-sm"><table class="table align-middle mb-0">
+    <thead><tr><th>Fecha</th><th>Donante</th><th>Monto</th><th>Método</th><th>Estado</th></tr></thead>
+    <tbody>{% for d in donations %}<tr><td>{{ d.created_at|date:"j M Y" }}</td><td>{{ d.public_name }}</td><td>${{ d.amount|floatformat:2 }}</td><td>{{ d.get_method_display }}</td><td>{% status_badge d %}</td></tr>
+    {% empty %}<tr><td colspan="5" class="text-muted text-center py-4">Sin aportes registrados.</td></tr>{% endfor %}</tbody>
+  </table></div>
+</div>
+{% endblock %}

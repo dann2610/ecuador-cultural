@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}{% if it.pk %}Editar itinerario{% else %}Nuevo itinerario{% endif %}{% endblock %}
+{% block content %}
+<div class="container-xxl py-4">
+  <h1 class="h3">{% if it.pk %}Editar «{{ it.name }}»{% else %}Nuevo itinerario público{% endif %}</h1>
+  <p class="text-muted">No inventes distancias, tiempos ni precios: déjalos vacíos si no hay datos fiables.</p>
+  <form method="post" enctype="multipart/form-data">{% csrf_token %}
+    <div class="card card-body shadow-sm mb-4">{% include "partials/form_fields.html" %}</div>
+    <h2 class="h5">Paradas (en orden)</h2>
+    {{ formset.management_form }}
+    {% if formset.non_form_errors %}<div class="alert alert-danger">{{ formset.non_form_errors }}</div>{% endif %}
+    <div class="table-responsive">
+      <table class="table align-middle stop-table">
+        <thead><tr><th>Orden</th><th>Día</th><th>Lugar</th><th>o pueblo</th><th>Tiempo desde la anterior</th><th>Notas</th><th>Quitar</th></tr></thead>
+        <tbody>
+        {% for f in formset %}
+          <tr>{% for h in f.hidden_fields %}{{ h }}{% endfor %}
+            <td style="width:80px">{{ f.order }}</td><td style="width:80px">{{ f.day }}</td><td>{{ f.place }}</td><td>{{ f.community }}</td>
+            <td>{{ f.travel_time_note }}</td><td>{{ f.notes }}</td><td>{{ f.DELETE }}</td></tr>
+          {% if f.errors %}<tr><td colspan="7" class="text-danger small">{{ f.non_field_errors }}{% for fld in f %}{{ fld.errors }}{% endfor %}</td></tr>{% endif %}
+        {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    <p class="small text-muted">Guarda para agregar más filas vacías.</p>
+    <div class="d-flex gap-2 flex-wrap">
+      {% if user.is_platform_admin %}
+        <button class="btn btn-green" name="action" value="publish"><i class="bi bi-check2-circle"></i> Guardar y publicar</button>
+        <button class="btn btn-outline-secondary" name="action" value="draft">Guardar como borrador</button>
+      {% else %}
+        <button class="btn btn-green" name="action" value="submit"><i class="bi bi-send"></i> Guardar y enviar a revisión</button>
+        <button class="btn btn-outline-secondary" name="action" value="draft">Guardar borrador</button>
+      {% endif %}
+      <a class="btn btn-link" href="{% if it.pk %}{{ it.get_absolute_url }}{% else %}{% url 'itineraries:list' %}{% endif %}">Cancelar</a>
+    </div>
+  </form>
+</div>
+{% endblock %}

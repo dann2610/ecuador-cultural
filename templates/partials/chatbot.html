@@ -1,0 +1,31 @@
+<div class="chatbot" id="chatbot" data-ask-url="{% url 'chatbot:ask' %}" data-suggest-url="{% url 'chatbot:suggestions' %}" data-delete-url="{% url 'chatbot:delete_history' %}">
+  <button class="chatbot__toggle" type="button" aria-expanded="false" aria-controls="chatbotPanel" title="Asistente Turístico Ecuador Cultural">
+    <i class="bi bi-compass"></i><span class="visually-hidden">Abrir asistente turístico</span>
+  </button>
+  <section class="chatbot__panel" id="chatbotPanel" role="dialog" aria-label="Asistente Turístico Ecuador Cultural" hidden>
+    <header class="chatbot__header">
+      <div class="d-flex align-items-center gap-2">
+        <span class="chatbot__avatar"><i class="bi bi-compass"></i></span>
+        <div><strong>Asistente Turístico</strong><br><small>Ecuador Cultural · responde con datos registrados</small></div>
+      </div>
+      <button class="btn-close btn-close-white" type="button" data-chat-close aria-label="Cerrar asistente"></button>
+    </header>
+    <div class="chatbot__messages" aria-live="polite">
+      <div class="msg msg--bot">¡Hola! Te ayudo a encontrar pueblos, tradiciones, platos típicos, artesanías, itinerarios y proyectos comunitarios. ¿Qué te gustaría descubrir?</div>
+    </div>
+    <div class="chatbot__suggestions" aria-label="Preguntas sugeridas"></div>
+    <form class="chatbot__form" autocomplete="off">{% csrf_token %}
+      <label class="visually-hidden" for="chatInput">Escribe tu pregunta</label>
+      <input id="chatInput" class="form-control" name="message" maxlength="500" placeholder="Escribe tu pregunta…" required>
+      <button class="btn btn-green" type="submit" aria-label="Enviar"><i class="bi bi-send"></i></button>
+    </form>
+    {% if user.is_authenticated %}
+    <div class="chatbot__privacy">
+      <label class="form-check-label small"><input type="checkbox" class="form-check-input me-1" data-save-history> Guardar mi historial</label>
+      <button type="button" class="btn btn-link btn-sm p-0" data-delete-history>Borrar historial</button>
+    </div>
+    {% else %}
+    <div class="chatbot__privacy small">Las conversaciones de visitantes no se guardan.</div>
+    {% endif %}
+  </section>
+</div>
